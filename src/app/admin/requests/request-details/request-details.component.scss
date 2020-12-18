@@ -1,6 +1,6 @@
 $fontFamily: Roboto, sans-serif;
 
-$modalWindowWidth: 551px;
+$modalWindowWidth: 568px;
 $modalWindowHeight: 1053px;
 
 ::ng-deep .newrequest-custom-modalbox {
@@ -19,97 +19,131 @@ $modalWindowHeight: 1053px;
   border-bottom: 1px solid #ccc;
 
   & a {
-    font-family: $fontFamily;
-    font-size: 18px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 100%;
-    letter-spacing: 0em;
-    text-align: center;
-    vertical-align: middle;
-  }
-}
-
-.detalii {
-  margin-top: 26px;
-  margin-left: 40px;
-
-  & a {
     font-family: Roboto;
     font-style: normal;
-    font-weight: 500;
-    font-size: 16px;
+    font-weight: normal;
+    font-size: 18px;
     line-height: 100%;
+    text-align: center;
   }
 }
 
-.line-label {
-  margin-left: 41px;
-  margin-top: 30px;
+.content {
+  border-bottom: 1px solid #dedede;
+  padding-left: 41px;
+  padding-right: 40px;
+  padding-top: 23px;
+  padding-bottom: 23px;
 
-  & a {
+  input,
+  select {
+    height: 40px;
+    border: 0.5px solid rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    padding: 15px;
+    color: #282828;
+    outline: none;
+  }
+
+  select {
+    padding: 0;
+  }
+
+  input.ng-invalid,
+  select.ng-invalid {
+    border: 0.5px solid red;
+  }
+
+  mat-select {
+    height: 40px;
+    border: 0.5px solid rgba(0, 0, 0, 0.4);
+  }
+
+  .fieldset {
+    font-family: Roboto;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 100%;
+    font-weight: 500;
+    color: #282828;
+    margin-bottom: 24px;
+  }
+
+  .fields_row {
+    margin-bottom: 23px;
+  }
+
+  .fields_row#telephone {
+    margin-bottom: 0px;
+  }
+
+  .arrow {
+    margin-left: 105px;
+    width: 0;
+    height: 0;
+    border-left: 7.87px solid transparent;
+    border-right: 7.87px solid transparent;
+    border-bottom: 15px solid #39c06f;
+
+    // Arrow but rectangle, which results in too much space
+
+    // display: inline-block;
+    // transform: rotate(-135deg);
+    // height: 12px;
+    // width: 12px;
+    // margin-bottom: -10px;
+    // border-bottom: 4px solid #3cd278;
+    // border-right: 4px solid #3cd278;
+  }
+
+  .beneficiary {
+    margin-bottom: 23px;
+    width: 230px;
+    height: 61px;
+    border: 2px solid #3cd278;
+    border-radius: 4px;
+
+    .field {
+      padding-left: 13px;
+      padding-top: 6px;
+
+      .title {
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 100%;
+        color: #39c06f;
+        margin-bottom: 5px;
+      }
+
+      .value {
+        padding-top: 7px;
+        padding-left: 10px;
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 100%;
+        background: #f7f7f7;
+        width: 202px;
+        height: 27px;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .field:not(:last-child) {
+    margin-right: 10px;
+  }
+
+  .title {
     font-family: Roboto;
     font-style: normal;
     font-weight: normal;
     font-size: 12px;
     line-height: 100%;
     color: #a9a6a6;
-  }
-}
-
-.mat-form-field {
-  height: 60px;
-  // background-color: aqua;
-}
-
-.content {
-  border-bottom: 1px solid #dedede;
-  padding: 20px;
-
-  input,
-  select {
-    height: 40px;
-    border: 0.5px solid rgba(0, 0, 0, 0.4);
-    box-sizing: border-box;
-    padding: 15px;
-    color: #282828;
-    outline: none;
-  }
-
-  select {
-    padding: 0;
-  }
-
-  input.ng-invalid,
-  select.ng-invalid {
-    border: 0.5px solid red;
-  }
-
-  mat-select {
-    height: 40px;
-    border: 0.5px solid rgba(0, 0, 0, 0.4);
-  }
-
-  .fieldset {
-    font-size: 16px;
-    font-weight: 700;
-    color: #282828;
-    margin-bottom: 24px;
-  }
-
-  .fields_row {
-    margin-bottom: 14px;
-  }
-
-  .field:not(:last-child) {
-    margin-right: 10px;
-  }
-
-  .title {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 100%;
-    color: #a9a6a6;
     margin-bottom: 10px;
   }
 
@@ -123,97 +157,46 @@ $modalWindowHeight: 1053px;
   }
 
   .slide-toggle {
+    width: 124px;
+    height: 40px;
     margin-top: 21px;
-    margin-left: 55px;
-    padding-top: 8px;
-    padding-left: 16px;
-    padding-bottom: 8px;
-    width: 150px;
-    border: 0.5px solid rgba(0, 0, 0, 0.4);
+    margin-left: 101px;
+    // padding-top: 8px;
+    // padding-left: 16px;
+    // padding-bottom: 8px;
+    // width: 150px;
+    border: 2px solid #e2e2e2;
+    padding-top: 5px;
+    padding-left: 15px;
     color: red;
-  }
-}
-
-.footer {
-  padding: 25px;
-  display: flex;
-  justify-content: center;
-}
-
-.content {
-  border-bottom: 1px solid #dedede;
-  padding: 20px;
-
-  input,
-  select {
-    height: 40px;
-    border: 0.5px solid rgba(0, 0, 0, 0.4);
-    box-sizing: border-box;
-    padding: 15px;
-    color: #282828;
-    outline: none;
-  }
-
-  select {
-    padding: 0;
-  }
-
-  input.ng-invalid,
-  select.ng-invalid {
-    border: 0.5px solid red;
-  }
-
-  mat-select {
-    height: 40px;
-    border: 0.5px solid rgba(0, 0, 0, 0.4);
-  }
-
-  .fieldset {
-    font-size: 16px;
-    font-weight: 700;
-    color: #282828;
-    margin-bottom: 24px;
-  }
-
-  .fields_row {
-    margin-bottom: 14px;
-  }
-
-  .field:not(:last-child) {
-    margin-right: 10px;
-  }
-
-  .title {
-    font-size: 12px;
-    font-weight: 400;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
     line-height: 100%;
-    color: #a9a6a6;
-    margin-bottom: 10px;
   }
 
-  .phone_prefix {
-    width: 70px;
-    border-right: none;
+  ::ng-deep .mat-slide-toggle-bar {
+    width: 16.64px;
+    height: 6.66px;
+    background: #e2e2e2;
+    border-radius: 10px;
   }
 
-  .phone_number {
-    width: 160px;
+  ::ng-deep .mat-slide-toggle-thumb {
+    width: 11.65px;
+    height: 11.65px;
+    background: #a6a6a6;
+    border: 1px solid #a6a6a6;
   }
 
-  .slide-toggle {
-    margin-top: 21px;
-    margin-left: 55px;
-    padding-top: 8px;
-    padding-left: 16px;
-    padding-bottom: 8px;
-    width: 150px;
-    border: 0.5px solid rgba(0, 0, 0, 0.4);
-    color: red;
+  :ng-deep .mat-slide-toggle-content span {
+    margin-left: 30px;
   }
 }
 
 .footer {
-  padding: 25px;
+  padding: 23px;
   display: flex;
   justify-content: center;
 }

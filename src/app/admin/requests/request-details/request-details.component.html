@@ -5,42 +5,80 @@
   <div class="content">
     <div class="fieldset">Detalii Beneficiar</div>
 
-    <div class="fields_row">
+    <div class="fields_row" id="telephone">
       <div class="field mobile" fxFlex fxLayout="column">
         <div class="title">Telefon (Mobil)</div>
         <div class="value">
-          <input class="phone_prefix" placeholder="+373" readonly tabindex="-1" />
-          <input matInput formControlName="phone" class="phone_number" [autofocus]="true" />
+          <input
+            class="phone_prefix"
+            placeholder="+373"
+            readonly
+            tabindex="-1"
+          />
+          <input
+            matInput
+            formControlName="phone"
+            class="phone_number"
+            [autofocus]="true"
+          />
         </div>
       </div>
 
       <div class="field landline" fxFlex fxLayout="column">
         <div class="title">Telefon (Fix)</div>
         <div class="value">
-          <input class="phone_prefix" placeholder="022" readonly tabindex="-1" />
+          <input
+            class="phone_prefix"
+            placeholder="022"
+            readonly
+            tabindex="-1"
+          />
           <input matInput formControlName="landline" class="phone_number" />
         </div>
       </div>
     </div>
+
+    <div
+      style="margin-bottom: 23px"
+      *ngIf="!testbool; else beneficiaryExists"
+    ></div>
+
+    <ng-template #beneficiaryExists>
+      <div class="arrow"></div>
+
+      <div class="beneficiary">
+        <div class="field" fxFlex fxLayout="column">
+          <div class="title">Beneficiar existent</div>
+          <div class="value">Test name</div>
+        </div>
+      </div>
+    </ng-template>
+
     <div class="fields_row">
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Nume (Familie)</div>
         <div class="value">
-          <input matInput style="width: 190px" formControlName="last_name" />
+          <input matInput style="width: 185px" formControlName="last_name" />
         </div>
       </div>
 
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Prenume</div>
         <div class="value">
-          <input matInput style="width: 190px" formControlName="first_name" />
+          <input matInput style="width: 185px" formControlName="first_name" />
         </div>
       </div>
 
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Vîrsta</div>
         <div class="value">
-          <input type="number" matInput style="width: 70px" formControlName="age" placeholder="65" />
+          <input
+            type="number"
+            matInput
+            style="width: 70px"
+            formControlName="age"
+            placeholder="65"
+          />
         </div>
       </div>
     </div>
@@ -49,7 +87,11 @@
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Sector</div>
         <div class="value">
-          <mat-select formControlName="zone" style="width: 230px" placeholder="Alege">
+          <mat-select
+            formControlName="zone"
+            style="width: 230px"
+            placeholder="Alege"
+          >
             <mat-option *ngFor="let sec of zones" [value]="sec">
               {{ sec.charAt(0).toUpperCase() + sec.slice(1) }}
             </mat-option>
@@ -69,21 +111,21 @@
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Scară</div>
         <div class="value">
-          <input matInput formControlName="entrance" style="width: 70px" />
+          <input matInput formControlName="entrance" style="width: 69.53px" />
         </div>
       </div>
 
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Etaj</div>
         <div class="value">
-          <input matInput formControlName="floor" style="width: 70px" />
+          <input matInput formControlName="floor" style="width: 69.53px" />
         </div>
       </div>
 
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Apartament</div>
         <div class="value">
-          <input matInput formControlName="apartment" style="width: 70px" />
+          <input matInput formControlName="apartment" style="width: 69.53px" />
         </div>
       </div>
     </div>
@@ -92,9 +134,16 @@
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Condiții speciale</div>
         <div class="value">
-          <mat-select formControlName="special_condition" style="width: 230px" placeholder="Alege">
+          <mat-select
+            formControlName="special_condition"
+            style="width: 230px"
+            placeholder="Alege"
+          >
             <mat-option [value]="'None'">None</mat-option>
-            <mat-option *ngFor="let item of specialConditions" [value]="item.value">
+            <mat-option
+              *ngFor="let item of specialConditions"
+              [value]="item.value"
+            >
               {{ item.label }}
             </mat-option>
           </mat-select>
@@ -110,7 +159,11 @@
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Are nevoie de</div>
         <div class="value">
-          <mat-select formControlName="need" style="width: 230px" placeholder="Alege">
+          <mat-select
+            formControlName="need"
+            style="width: 230px"
+            placeholder="Alege"
+          >
             <!-- <img src="/assets/icons/volunteers/{{ volunteerRolesIncons[role.key] }}.svg" width="24" height="24" /> -->
             <mat-option *ngFor="let need of needs" [value]="need">
               {{ need }}
@@ -125,7 +178,11 @@
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Boală contagioasă</div>
         <div class="value">
-          <mat-select formControlName="ilness" style="width: 230px" placeholder="Alege">
+          <mat-select
+            formControlName="ilness"
+            style="width: 230px"
+            placeholder="Alege"
+          >
             <mat-option *ngFor="let item of ilnessOptions" [value]="item">
               {{ item }}
             </mat-option>
@@ -138,7 +195,12 @@
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Comentarii operator</div>
         <div class="value">
-          <input matInput formControlName="comments" style="width: 460px" placeholder="---" />
+          <input
+            matInput
+            formControlName="comments"
+            style="width: 470px"
+            placeholder="---"
+          />
         </div>
       </div>
     </div>
@@ -153,7 +215,9 @@
 
       <div class="field" fxFlex fxLayout="column">
         <div class="slide-toggle">
-          <mat-slide-toggle color="warn" formControlName="urgent">Urgent?</mat-slide-toggle>
+          <mat-slide-toggle color="warn" formControlName="urgent"
+            >Urgent?</mat-slide-toggle
+          >
         </div>
       </div>
     </div>
