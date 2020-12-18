@@ -17,8 +17,6 @@ $modalWindowHeight: 1053px;
   width: 100%;
   border-radius: 0px;
   border-bottom: 1px solid #ccc;
-  left: 195px;
-  top: 24px;
 
   & a {
     font-family: Roboto;
@@ -72,7 +70,67 @@ $modalWindowHeight: 1053px;
   }
 
   .fields_row {
-    margin-bottom: 14px;
+    margin-bottom: 23px;
+  }
+
+  .fields_row#telephone {
+    margin-bottom: 0px;
+  }
+
+  .arrow {
+    margin-left: 105px;
+    width: 0;
+    height: 0;
+    border-left: 7.87px solid transparent;
+    border-right: 7.87px solid transparent;
+    border-bottom: 15px solid #39c06f;
+
+    // Arrow but rectangle, which results in too much space
+
+    // display: inline-block;
+    // transform: rotate(-135deg);
+    // height: 12px;
+    // width: 12px;
+    // margin-bottom: -10px;
+    // border-bottom: 4px solid #3cd278;
+    // border-right: 4px solid #3cd278;
+  }
+
+  .beneficiary {
+    margin-bottom: 23px;
+    width: 230px;
+    height: 61px;
+    border: 2px solid #3cd278;
+    border-radius: 4px;
+
+    .field {
+      padding-left: 13px;
+      padding-top: 6px;
+
+      .title {
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 100%;
+        color: #39c06f;
+        margin-bottom: 5px;
+      }
+
+      .value {
+        padding-top: 7px;
+        padding-left: 10px;
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 100%;
+        background: #f7f7f7;
+        width: 202px;
+        height: 27px;
+        border-radius: 4px;
+      }
+    }
   }
 
   .field:not(:last-child) {
