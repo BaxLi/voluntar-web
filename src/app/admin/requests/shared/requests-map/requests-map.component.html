@@ -2,7 +2,31 @@
   <map #map></map>
 
   <div fxFlex="25" class="mt-3">
-    <div fxLayoutAlign="center">Selectare Beneficiari</div>
+    <div fxLayout="column">
+      <div fxLayoutAlign="center">Selectare Beneficiari</div>
+      <div
+        fxLayout="row"
+        fxLayoutAlign="space-around center"
+        style="border: 1px solid #ccc"
+      >
+        <div fxFlex="45" style="background-color: aquamarine">
+          <mat-select formControlName="" placeholder="Sector">
+            <mat-option>1</mat-option>
+            <mat-option>2</mat-option>
+            <mat-option>3</mat-option>
+            <mat-option>4</mat-option>
+          </mat-select>
+        </div>
+        <div fxFlex="45" style="background-color: rgb(51, 185, 141)">
+          <mat-select formControlName="" placeholder="Necesitate">
+            <mat-option>1</mat-option>
+            <mat-option>2</mat-option>
+            <mat-option>3</mat-option>
+            <mat-option>4</mat-option>
+          </mat-select>
+        </div>
+      </div>
+    </div>
     <!-- TODO  -->
   </div>
 </div>
