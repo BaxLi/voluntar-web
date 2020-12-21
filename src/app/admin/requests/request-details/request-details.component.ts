@@ -20,6 +20,17 @@ export enum CUSTOMER_NEEDS {
   'Payment' = 'Achitare Facturi'
 }
 
+export const ILNESS_OPTIONS_TEST = [
+  {
+    label: 'None',
+    value: 'Nu are'
+  },
+  {
+    label: 'Has symptoms',
+    value: 'Are simptome'
+  }
+]
+
 @Component({
   templateUrl: './request-details.component.html',
   styleUrls: ['./request-details.component.scss'],
@@ -31,12 +42,13 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
   needs: Array<string> = Object.values(CUSTOMER_NEEDS).filter((key) =>
     isNaN(+key)
   )
+  needsIcons: ['', 'accessible']
   ilnessOptions: Array<string> = Object.values(ILNESS_OPTIONS).filter((key) =>
     isNaN(+key)
   )
   specialConditions = SPECIAL_CONDITIONS
 
-  testbool = true //Testing for the beneficiary component
+  existentBeneficiary = false //Testing for the beneficiary component
 
   constructor(private requestsFacade: RequestsFacade) {}
 
@@ -81,7 +93,7 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
       need: new FormControl('', [Validators.required]),
       comments: new FormControl(''),
       password: new FormControl(null, [Validators.required]),
-      urgent: new FormControl(false, [Validators.required])
+      urgent: new FormControl(false)
     })
   }
   ngOnDestroy() {}
@@ -89,5 +101,13 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
   getEnumKeyByEnumValue(myEnum, enumValue) {
     let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue)
     return keys.length > 0 ? keys[0] : null
+  }
+
+  checkForExistentBeneficiary(phone: any) {
+    // this function should display the hidden div if the benficiary is found
+
+    // check if the logic works
+    if (phone.length == 8) this.existentBeneficiary = true
+    else this.existentBeneficiary = false
   }
 }
