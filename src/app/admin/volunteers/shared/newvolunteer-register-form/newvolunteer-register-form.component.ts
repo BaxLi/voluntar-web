@@ -1,9 +1,19 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core'
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { DAYS_OF_WEEK, VOLUNTEER_ROLES, VOLUNTEER_ROLES_ICONS, ZONES } from '@app/shared/constants'
+import {
+  DAYS_OF_WEEK,
+  VOLUNTEER_ROLES,
+  VOLUNTEER_ROLES_ICONS,
+  ZONES
+} from '@app/shared/constants'
 import { IVolunteer } from '@app/shared/models'
-import { Subscription } from 'rxjs'
 import { VolunteersFacade } from '../../volunteers.facade'
 import { FormHoursSelectorComponent } from '../form-hours-selector/form-hours-selector.component'
 
@@ -62,16 +72,24 @@ export class NewVolunteerRegisterFormComponent implements OnInit, OnDestroy {
   volunteerRolesIncons = VOLUNTEER_ROLES_ICONS
   zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
   daysOfWeek = DAYS_OF_WEEK
-  sub$: Subscription
 
-  constructor(private volunteersService: VolunteersFacade, public dialog: MatDialog) {}
+  constructor(
+    private volunteersService: VolunteersFacade,
+    public dialog: MatDialog
+  ) {}
 
   onSubmit(ev) {
     let newVolunteer: IVolunteer = this.form.value
     let endH = this.form.get('availability_hours_end').value.split(':', 1)[0]
-    let startH = this.form.get('availability_hours_start').value.split(':', 1)[0]
+    let startH = this.form
+      .get('availability_hours_start')
+      .value.split(':', 1)[0]
 
-    newVolunteer = Object.assign({ ...newVolunteer, availability_hours_start: startH, availability_hours_end: endH })
+    newVolunteer = Object.assign({
+      ...newVolunteer,
+      availability_hours_start: startH,
+      availability_hours_end: endH
+    })
     this.volunteersService.saveVolunteer(newVolunteer)
   }
 
@@ -79,7 +97,10 @@ export class NewVolunteerRegisterFormComponent implements OnInit, OnDestroy {
     this.form = new FormGroup({
       first_name: new FormControl('', [Validators.required]),
       last_name: new FormControl('', [Validators.required]),
-      phone: new FormControl('', [Validators.required, Validators.pattern(/^[^0]([0-9]){7}$/)]),
+      phone: new FormControl('', [
+        Validators.required,
+        Validators.pattern(/^[^0]([0-9]){7}$/)
+      ]),
       email: new FormControl('', [Validators.required, Validators.email]),
       zone: new FormControl('', [Validators.required, Validators.minLength(3)]),
       address: new FormControl('', [Validators.required]),
@@ -91,9 +112,18 @@ export class NewVolunteerRegisterFormComponent implements OnInit, OnDestroy {
       ]),
       facebook_profile: new FormControl(''),
       role: new FormControl([], [Validators.required, Validators.minLength(1)]),
-      availability_days: new FormControl([], [Validators.required, Validators.minLength(1)]),
-      availability_hours_start: new FormControl('08:00', [Validators.required, Validators.minLength(5)]),
-      availability_hours_end: new FormControl('08:00', [Validators.required, Validators.minLength(5)])
+      availability_days: new FormControl(
+        [],
+        [Validators.required, Validators.minLength(1)]
+      ),
+      availability_hours_start: new FormControl('08:00', [
+        Validators.required,
+        Validators.minLength(5)
+      ]),
+      availability_hours_end: new FormControl('08:00', [
+        Validators.required,
+        Validators.minLength(5)
+      ])
     })
   }
 
@@ -106,16 +136,16 @@ export class NewVolunteerRegisterFormComponent implements OnInit, OnDestroy {
       height: '125px',
       panelClass: 'custom-modalbox'
     })
-    this.sub$ = dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe((result) => {
       dialogRef.close()
       this.availabilityHoursLine.nativeElement.innerHTML =
-        this.form.value.availability_hours_start + ' - ' + this.form.value.availability_hours_end
+        this.form.value.availability_hours_start +
+        ' - ' +
+        this.form.value.availability_hours_end
     })
   }
 
-  ngOnDestroy(): void {
-    this.sub$.unsubscribe()
-  }
+  ngOnDestroy(): void {}
 
   get formAll() {
     return this.form
