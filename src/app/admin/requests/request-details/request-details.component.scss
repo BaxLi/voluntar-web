@@ -35,6 +35,43 @@ $modalWindowHeight: 1053px;
   padding-top: 23px;
   padding-bottom: 0px;
 
+  .beneficiary {
+    margin-bottom: 23px;
+    width: 230px;
+    height: 61px;
+    border: 2px solid #3cd278;
+    border-radius: 4px;
+
+    .field {
+      padding-left: 13px;
+      padding-top: 6px;
+
+      .title {
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 100%;
+        color: #39c06f;
+        margin-bottom: 5px;
+      }
+
+      .value {
+        padding-top: 7px;
+        padding-left: 10px;
+        font-family: Roboto;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 100%;
+        background: #f7f7f7;
+        width: 202px;
+        height: 27px;
+        border-radius: 4px;
+      }
+    }
+  }
+
   input,
   select {
     height: 40px;

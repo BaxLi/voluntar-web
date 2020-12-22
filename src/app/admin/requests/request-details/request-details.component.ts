@@ -13,21 +13,22 @@ export enum ILNESS_OPTIONS {
   'Has symptoms' = 'Are simptome'
 }
 
-export enum BENEFICIARY_NEEDS {
-  'Food' = 'Produse Alimentare',
-  Drugs = 'Medicamente',
-  Transport = 'Transport Persoana',
-  Payment = 'Achitare Facturi'
-}
-
-export const ILNESS_OPTIONS_TEST = [
+export const BENEFICIARY_NEEDS = [
   {
-    label: 'None',
-    value: 'Nu are'
+    label: 'Food',
+    value: 'Produse Alimentare'
   },
   {
-    label: 'Has symptoms',
-    value: 'Are simptome'
+    label: 'Drugs',
+    value: 'Medicamente'
+  },
+  {
+    label: 'Transport',
+    value: 'Transport Persoana'
+  },
+  {
+    label: 'Payment',
+    value: 'Achitare Facturi'
   }
 ]
 
@@ -39,7 +40,7 @@ export const ILNESS_OPTIONS_TEST = [
 export class RequestDetailsComponent implements OnInit, OnDestroy {
   form: FormGroup
   zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
-  public needs: BENEFICIARY_NEEDS
+  needs = BENEFICIARY_NEEDS
   ilnessOptions: Array<string> = Object.values(ILNESS_OPTIONS).filter((key) =>
     isNaN(+key)
   )
@@ -81,12 +82,18 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
       phone: new FormControl(null, [
         Validators.required,
         Validators.minLength(8),
-        Validators.maxLength(8)
+        Validators.maxLength(8),
+        Validators.pattern(/^([0-9]){8}$/)
       ]),
       landline: new FormControl(
         null,
         // because we add prefix 22 at form submit.
-        [Validators.required, Validators.minLength(6), Validators.maxLength(6)]
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.maxLength(6),
+          Validators.pattern(/^([0-9]){6}$/)
+        ]
       ),
       special_condition: new FormControl(null, [Validators.required]),
       ilness: new FormControl('', [Validators.required]),
