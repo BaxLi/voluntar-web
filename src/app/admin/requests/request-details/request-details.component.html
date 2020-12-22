@@ -207,12 +207,17 @@
             style="width: 230px"
             placeholder="Alege"
           >
-            <!-- <img src="/assets/icons/volunteers/{{ volunteerRolesIncons[role.key] }}.svg" width="24" height="24" /> -->
-            <mat-option *ngFor="let need of needs" [value]="need">
-              {{ need }}
+            <mat-option
+              *ngFor="let need of needs | keyvalue: enumUnsorted"
+              [value]="need.key"
+            >
+              <!-- <img
+                src="/assets/icons/volunteers/{{ [need.key] }}.svg"
+                width="24"
+                height="24"
+              /> -->
+              {{ need.value }}
             </mat-option>
-            <!-- <mat-option>Nu are</mat-option>
-            <mat-option><mat-icon></mat-icon>Are simptome</mat-option> -->
           </mat-select>
           <mat-error
             *ngIf="form.get('need').invalid && form.get('need').touched"

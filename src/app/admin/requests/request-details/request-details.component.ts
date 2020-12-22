@@ -13,11 +13,11 @@ export enum ILNESS_OPTIONS {
   'Has symptoms' = 'Are simptome'
 }
 
-export enum CUSTOMER_NEEDS {
+export enum BENEFICIARY_NEEDS {
   'Food' = 'Produse Alimentare',
-  'Drugs' = 'Medicamente',
-  'Transport' = 'Transport Persoana',
-  'Payment' = 'Achitare Facturi'
+  Drugs = 'Medicamente',
+  Transport = 'Transport Persoana',
+  Payment = 'Achitare Facturi'
 }
 
 export const ILNESS_OPTIONS_TEST = [
@@ -39,10 +39,7 @@ export const ILNESS_OPTIONS_TEST = [
 export class RequestDetailsComponent implements OnInit, OnDestroy {
   form: FormGroup
   zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
-  needs: Array<string> = Object.values(CUSTOMER_NEEDS).filter((key) =>
-    isNaN(+key)
-  )
-  needsIcons: ['', 'accessible']
+  public needs: BENEFICIARY_NEEDS
   ilnessOptions: Array<string> = Object.values(ILNESS_OPTIONS).filter((key) =>
     isNaN(+key)
   )
@@ -56,7 +53,10 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
     this.form
       .get('need')
       .setValue(
-        this.getEnumKeyByEnumValue(CUSTOMER_NEEDS, this.form.get('need').value)
+        this.getEnumKeyByEnumValue(
+          BENEFICIARY_NEEDS,
+          this.form.get('need').value
+        )
       )
     this.form
       .get('ilness')
@@ -100,8 +100,11 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
 
   getEnumKeyByEnumValue(myEnum, enumValue) {
     let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue)
+    console.log('🚀  ~ getEnumKeyByEnumValue ~ keys', keys[0])
     return keys.length > 0 ? keys[0] : null
   }
+
+  enumUnsorted() {}
 
   checkForExistentBeneficiary(phone: any) {
     // this function should display the hidden div if the benficiary is found
