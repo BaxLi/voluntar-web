@@ -22,9 +22,7 @@
             [autofocus]="true"
             (change)="checkForExistentBeneficiary($event.target.value)"
           />
-          <mat-error
-            *ngIf="form.get('phone').invalid && form.get('phone').touched"
-          >
+          <mat-error *ngIf="form.get('phone').invalid && form.touched">
             'atenție, eroare - cîmp de 8 cifre obligatoriu!'
           </mat-error>
         </div>
@@ -40,9 +38,7 @@
             tabindex="-1"
           />
           <input matInput formControlName="landline" class="phone_number" />
-          <mat-error
-            *ngIf="form.get('landline').invalid && form.get('landline').touched"
-          >
+          <mat-error *ngIf="form.get('landline').invalid && form.touched">
             'atenție, eroare - cîmp de 6 cifre obligatoriu!'
           </mat-error>
         </div>
@@ -70,11 +66,7 @@
         <div class="title">Nume (Familie)</div>
         <div class="value">
           <input matInput style="width: 185px" formControlName="last_name" />
-          <mat-error
-            *ngIf="
-              form.get('last_name').invalid && form.get('last_name').touched
-            "
-          >
+          <mat-error *ngIf="form.get('last_name').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
         </div>
@@ -84,11 +76,7 @@
         <div class="title">Prenume</div>
         <div class="value">
           <input matInput style="width: 185px" formControlName="first_name" />
-          <mat-error
-            *ngIf="
-              form.get('first_name').invalid && form.get('first_name').touched
-            "
-          >
+          <mat-error *ngIf="form.get('first_name').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
         </div>
@@ -121,9 +109,7 @@
               {{ sec.charAt(0).toUpperCase() + sec.slice(1) }}
             </mat-option>
           </mat-select>
-          <mat-error
-            *ngIf="form.get('zone').invalid && form.get('zone').touched"
-          >
+          <mat-error *ngIf="form.get('zone').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
         </div>
@@ -135,9 +121,7 @@
         <div class="title">Adresă</div>
         <div class="value">
           <input matInput formControlName="address" style="width: 230px" />
-          <mat-error
-            *ngIf="form.get('address').invalid && form.get('address').touched"
-          >
+          <mat-error *ngIf="form.get('address').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
         </div>
@@ -192,10 +176,7 @@
             </mat-option>
           </mat-select>
           <mat-error
-            *ngIf="
-              form.get('special_condition').invalid &&
-              form.get('special_condition').touched
-            "
+            *ngIf="form.get('special_condition').invalid && form.touched"
           >
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
@@ -227,9 +208,7 @@
               {{ need.value }}
             </mat-option>
           </mat-select>
-          <mat-error
-            *ngIf="form.get('need').invalid && form.get('need').touched"
-          >
+          <mat-error *ngIf="form.get('need').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
         </div>
@@ -255,9 +234,7 @@
               Are simptome
             </mat-option>
           </mat-select>
-          <mat-error
-            *ngIf="form.get('ilness').invalid && form.get('ilness').touched"
-          >
+          <mat-error *ngIf="form.get('ilness').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
         </div>
@@ -283,17 +260,15 @@
         <div class="title">Parola secretă</div>
         <div class="value">
           <input matInput formControlName="password" style="width: 150px" />
-          <mat-error
-            *ngIf="form.get('password').invalid && form.get('password').touched"
-          >
+          <mat-error *ngIf="form.get('password').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
         </div>
       </div>
 
       <div class="field" fxFlex fxLayout="column">
-        <div class="slide-toggle">
-          <mat-slide-toggle color="warn" formControlName="urgent">
+        <div class="slide-toggle" [ngStyle]="getUrgentStyleObject()">
+          <mat-slide-toggle formControlName="urgent">
             Urgent?
           </mat-slide-toggle>
         </div>
@@ -302,6 +277,13 @@
   </div>
 
   <div class="footer">
-    <button mat-flat-button color="primary" type="submit">Crează</button>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="form.invalid"
+      type="submit"
+    >
+      Crează
+    </button>
   </div>
 </form>

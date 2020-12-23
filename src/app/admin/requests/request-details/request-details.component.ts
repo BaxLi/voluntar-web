@@ -51,6 +51,7 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
   constructor(private requestsFacade: RequestsFacade) {}
 
   onSubmit(ev: Event) {
+    // Transform the values for backend
     this.form
       .get('need')
       .setValue(
@@ -107,17 +108,21 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
 
   getEnumKeyByEnumValue(myEnum, enumValue) {
     let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue)
-    console.log('🚀  ~ getEnumKeyByEnumValue ~ keys', keys[0])
     return keys.length > 0 ? keys[0] : null
   }
 
   enumUnsorted() {}
 
   checkForExistentBeneficiary(phone: any) {
-    // this function should display the hidden div if the benficiary is found
-
+    // this function should display the hidden div if the beneficiary is found
     // check if the logic works
     if (phone.length == 8) this.existentBeneficiary = true
     else this.existentBeneficiary = false
+  }
+
+  getUrgentStyleObject() {
+    if (this.form.get('urgent').value === false) {
+      return { backgroundColor: 'white', color: '#ed5555' }
+    } else return { backgroundColor: '#ed5555', color: 'white' }
   }
 }

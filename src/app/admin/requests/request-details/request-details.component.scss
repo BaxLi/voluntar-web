@@ -7,7 +7,7 @@ $modalWindowHeight: 1053px;
   .mat-dialog-container {
     width: $modalWindowWidth;
     height: $modalWindowHeight;
-    padding: 0;
+    padding: 0px !important;
     background: #ffffff;
   }
 }
@@ -86,11 +86,6 @@ $modalWindowHeight: 1053px;
     padding: 0;
   }
 
-  input.ng-invalid,
-  select.ng-invalid {
-    border: 0.5px solid red;
-  }
-
   mat-select {
     height: 40px;
     border: 0.5px solid rgba(0, 0, 0, 0.4);
@@ -149,7 +144,6 @@ $modalWindowHeight: 1053px;
     border: 2px solid #e2e2e2;
     padding-top: 5px;
     padding-left: 15px;
-    color: red;
     font-family: Roboto;
     font-style: normal;
     font-weight: 500;
@@ -167,6 +161,18 @@ $modalWindowHeight: 1053px;
   }
 }
 
+// NG deep used to modify the slide-toggle component
+
+:host ::ng-deep .mat-slide-toggle {
+  display: inline-block !important;
+  height: 25px;
+  width: 124px;
+}
+
+:host ::ng-deep .mat-slide-toggle-content {
+  padding-left: 10px;
+}
+
 :host ::ng-deep .mat-slide-toggle-bar {
   width: 16.64px;
   height: 6.66px;
@@ -179,6 +185,22 @@ $modalWindowHeight: 1053px;
   height: 11.65px;
   background: #a6a6a6;
   border: 1px solid #a6a6a6;
+}
+
+:host
+  ::ng-deep
+  .mat-slide-toggle.mat-checked:not(.mat-disabled)
+  .mat-slide-toggle-bar {
+  background-color: #e2e2e2;
+  border-radius: 10px;
+}
+
+:host
+  ::ng-deep
+  .mat-slide-toggle.mat-checked:not(.mat-disabled)
+  .mat-slide-toggle-thumb {
+  background: #a83030;
+  border: 1px solid #a83030;
 }
 
 mat-error {
