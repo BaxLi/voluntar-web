@@ -16,7 +16,11 @@ import { saveVolunteerSuccessAction } from '../volunteers.actions'
 import { ActivatedRoute, Router } from '@angular/router'
 import { FormBuilder } from '@angular/forms'
 import { KIV_ZONES, VOLUNTEER_ROLES } from '@shared/constants'
-import { FilterInputColumns, FilterObservableSelectColumns, FilterSelectColumns } from '@shared/filter/filter.types'
+import {
+  FilterInputColumns,
+  FilterObservableSelectColumns,
+  FilterSelectColumns
+} from '@shared/filter/filter.types'
 import { NewVolunteerRegisterFormComponent } from '../shared/newvolunteer-register-form/newvolunteer-register-form.component'
 
 @Component({
@@ -25,7 +29,14 @@ import { NewVolunteerRegisterFormComponent } from '../shared/newvolunteer-regist
 })
 export class VolunteersListComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator
-  displayedColumns: string[] = ['icons', 'name', 'phone', 'status', 'availableHours', 'cases_solved']
+  displayedColumns: string[] = [
+    'icons',
+    'name',
+    'phone',
+    'status',
+    'availableHours',
+    'cases_solved'
+  ]
   dataSource$: Observable<IVolunteer[]>
   count$ = this.volunteersFacade.count$
   isLoading$ = this.volunteersFacade.isLoading$
@@ -119,7 +130,9 @@ export class VolunteersListComponent implements OnInit {
       }
     ]
 
-    this.selectColumns = [{ name: 'Is Active', value: 'is_active', array: this.isActive }]
+    this.selectColumns = [
+      { name: 'Is Active', value: 'is_active', array: this.isActive }
+    ]
   }
 
   onVolunteersImport(): void {
@@ -131,7 +144,9 @@ export class VolunteersListComponent implements OnInit {
   }
 
   getAllStatusesCount() {
-    const requests = this.statuses.map((status) => this.helperGetCountByStatus(status._id))
+    const requests = this.statuses.map((status) =>
+      this.helperGetCountByStatus(status._id)
+    )
     forkJoin(requests)
       .pipe(take(1))
       .subscribe((res) => {
@@ -140,7 +155,9 @@ export class VolunteersListComponent implements OnInit {
   }
 
   helperGetCountByStatus(status: string) {
-    return this.volunteersFacade.getByStatus(status).pipe(map((res) => res.count))
+    return this.volunteersFacade
+      .getByStatus(status)
+      .pipe(map((res) => res.count))
   }
 
   queryResult(criteria: { [keys: string]: string }) {
@@ -155,21 +172,22 @@ export class VolunteersListComponent implements OnInit {
   }
 
   openNewVolunteerDialog() {
-    const dialogRef = this.matDialog.open(
-      // VolunteersDetailsComponent,
-      NewVolunteerRegisterFormComponent,
-      {
-        data: {},
-        width: '555px',
-        height: '881px',
-        panelClass: 'custom-modalbox'
-      }
-    )
-
-    this.actions$.pipe(ofType(saveVolunteerSuccessAction), takeUntil(dialogRef.afterClosed())).subscribe(() => {
-      this.volunteersFacade.getVolunteers(this.page, this.lastFilter)
-      dialogRef.close()
+    const dialogRef = this.matDialog.open(NewVolunteerRegisterFormComponent, {
+      data: {},
+      width: '555px',
+      height: '881px',
+      panelClass: 'custom-modalbox'
     })
+
+    this.actions$
+      .pipe(
+        ofType(saveVolunteerSuccessAction),
+        takeUntil(dialogRef.afterClosed())
+      )
+      .subscribe(() => {
+        this.volunteersFacade.getVolunteers(this.page, this.lastFilter)
+        dialogRef.close()
+      })
   }
 
   onTabChange(tabId: string) {

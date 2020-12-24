@@ -1,5 +1,9 @@
 <div class="mat-dialog-container-hours">
-  <div fxLayout="row" fxLayoutAlign="space-between center" class="flex-container availability-hours-component">
+  <div
+    fxLayout="row"
+    fxLayoutAlign="space-between center"
+    class="flex-container availability-hours-component"
+  >
     <div style="margin-left: 18px">
       <a> {{ start }} - {{ end }} </a>
     </div>
@@ -10,7 +14,14 @@
 
   <div
     class=""
-    style="width: 230px; height: 27px; align-items: center; font-size: 12px; line-height: 27px; text-align: center"
+    style="
+      width: 230px;
+      height: 27px;
+      align-items: center;
+      font-size: 12px;
+      line-height: 27px;
+      text-align: center;
+    "
   >
     <a fxFlex="50" style="text-align: left; margin-left: 1px"> De la: </a>
     <a fxFlex="50" style="text-align: left; margin-left: 5px"> Pînă la:</a>
@@ -19,7 +30,10 @@
   <mat-grid-list cols="2" rowHeight="34px" gutterSize="8px">
     <mat-grid-tile>
       <mat-form-field>
-        <mat-select (selectionChange)="onChangeStartHour($event.value)" [(ngModel)]="start">
+        <mat-select
+          (selectionChange)="onChangeStartHour($event.value)"
+          [(ngModel)]="start"
+        >
           <mat-option *ngFor="let hour of hours" [value]="hour">
             {{ hour }}
           </mat-option>
@@ -29,7 +43,10 @@
 
     <mat-grid-tile>
       <mat-form-field>
-        <mat-select (selectionChange)="onChangeEndHour($event.value)" [(ngModel)]="end">
+        <mat-select
+          (selectionChange)="onChangeEndHour($event.value)"
+          [(ngModel)]="end"
+        >
           <mat-option *ngFor="let hour of hours" [value]="hour">
             {{ hour }}
           </mat-option>
@@ -37,14 +54,5 @@
       </mat-form-field>
     </mat-grid-tile>
   </mat-grid-list>
-  <div fxLayoutAlign="end" style="margin-right: 10px; margin-top: 10px">
-    <!-- <button
-      mat-raised-button
-      disabled
-      (click)="onSubmit($event)"
-      [disabled]="parentForm.value.availability_hours_start >= parentForm.value.availability_hours_end"
-    >
-      Ok
-    </button> -->
-  </div>
+  <div fxLayoutAlign="end" style="margin-right: 10px; margin-top: 10px"></div>
 </div>
