@@ -119,13 +119,28 @@
     <div class="fields_row">
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Adresă</div>
-        <div class="value">
-          <input matInput formControlName="address" style="width: 230px" />
+        <app-request-address-field></app-request-address-field>
+        <mat-error *ngIf="form.get('address').invalid && form.touched">
+          atenție, eroare - cîmp obligatoriu!
+        </mat-error>
+      </div>
+
+      <!-- <div class="fields_row">
+        <div class="field" fxFlex fxLayout="column">
+          <div class="title">Adresă</div>
+          <div class="value" id="address">
+            <input id="adress_input" matInput formControlName="address" />
+            <img class="icon" src="/assets/icons/requests/address/Correct.svg" />
+            <img
+              class="icon"
+              src="/assets/icons/requests/address/Incorrect.svg"
+            />
+            <img class="icon" src="/assets/icons/requests/address/Map.svg" />
+          </div>
           <mat-error *ngIf="form.get('address').invalid && form.touched">
             atenție, eroare - cîmp obligatoriu!
           </mat-error>
-        </div>
-      </div>
+        </div> -->
 
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Scară</div>
