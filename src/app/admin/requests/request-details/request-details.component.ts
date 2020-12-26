@@ -7,6 +7,7 @@ import {
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { SPECIAL_CONDITIONS, ZONES } from '@app/shared/constants'
 import { RequestsFacade } from '../requests.facade'
+import { coordinates } from './request-address-field/request-address-field.component'
 
 export enum ILNESS_OPTIONS {
   'None' = 'Nu are',
@@ -124,5 +125,17 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
     if (this.form.get('urgent').value === false) {
       return { backgroundColor: 'white', color: '#ed5555' }
     } else return { backgroundColor: '#ed5555', color: 'white' }
+  }
+
+  updateAdress(event: coordinates) {
+    console.log(
+      '🚀 ~ file: request-details.component.ts ~ line 130 ~ RequestDetailsComponent ~ updateAdress ~ event',
+      event
+    )
+    this.form.get('address').patchValue(event.address)
+    console.log(
+      "🚀 ~ file: request-details.component.ts ~ line 136 ~ RequestDetailsComponent ~ updateAdress ~ this.form.get('address')",
+      this.form.get('address').value
+    )
   }
 }

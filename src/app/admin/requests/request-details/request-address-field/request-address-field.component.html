@@ -1,6 +1,17 @@
 <div class="address">
-  <input matInput formControlName="address" />
-  <img class="icon" src="/assets/icons/requests/address/Correct.svg" />
-  <img class="icon" src="/assets/icons/requests/address/Incorrect.svg" />
-  <img class="icon" src="/assets/icons/requests/address/Map.svg" />
+  <input matInput [value]="addressFromMap" />
+  <img
+    class="icon"
+    *ngIf="addressFromMap.length > 0; else incorrect"
+    src="/assets/icons/requests/address/Correct.svg"
+  />
+  <ng-template #incorrect>
+    <img class="icon" src="/assets/icons/requests/address/Incorrect.svg" />
+  </ng-template>
+  <img
+    type="button"
+    class="icon"
+    src="/assets/icons/requests/address/Map.svg"
+    (click)="showMapDialog()"
+  />
 </div>

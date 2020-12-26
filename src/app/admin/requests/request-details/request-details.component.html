@@ -119,7 +119,9 @@
     <div class="fields_row">
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Adresă</div>
-        <app-request-address-field></app-request-address-field>
+        <app-request-address-field
+          (gotCoordinates)="updateAdress($event)"
+        ></app-request-address-field>
         <mat-error *ngIf="form.get('address').invalid && form.touched">
           atenție, eroare - cîmp obligatoriu!
         </mat-error>
