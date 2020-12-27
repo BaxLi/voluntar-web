@@ -16,7 +16,7 @@ export interface coordinates {
 })
 export class RequestAddressFieldComponent implements OnInit {
   @Output() gotCoordinates = new EventEmitter<coordinates>()
-  addressFromMap = ''
+  selectedAddress = ''
   constructor(private matDialog: MatDialog) {}
 
   ngOnInit(): void {}
@@ -43,8 +43,18 @@ export class RequestAddressFieldComponent implements OnInit {
       .subscribe((coors) => {
         if (coors) {
           this.gotCoordinates.emit(coors)
-          this.addressFromMap = coors.address
+          this.selectedAddress = coors.address
         }
       })
+  }
+
+  selectAddress(ev) {
+    this.selectedAddress = ev.target.value
+    let coords = {
+      latitude: null,
+      longitude: null,
+      address: this.selectedAddress
+    }
+    this.gotCoordinates.emit(coords)
   }
 }

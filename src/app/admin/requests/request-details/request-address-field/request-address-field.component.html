@@ -1,8 +1,12 @@
 <div class="address">
-  <input matInput [value]="addressFromMap" />
+  <input
+    matInput
+    (change)="selectAddress($event)"
+    [(ngModel)]="selectedAddress"
+  />
   <img
     class="icon"
-    *ngIf="addressFromMap.length > 0; else incorrect"
+    *ngIf="selectedAddress.length > 0; else incorrect"
     src="/assets/icons/requests/address/Correct.svg"
   />
   <ng-template #incorrect>
