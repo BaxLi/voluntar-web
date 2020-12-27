@@ -7,6 +7,7 @@ export interface coordinates {
   latitude: number
   longitude: number
   address: string
+  valid: boolean
 }
 
 @Component({
@@ -42,6 +43,10 @@ export class RequestAddressFieldComponent implements OnInit {
       .pipe(first())
       .subscribe((coors) => {
         if (coors) {
+          if (coors.address.length > 1 || coors.address.length == 0)
+            coors.valid = true
+          else coors.valid = false
+          console.log(coors.valid)
           this.gotCoordinates.emit(coors)
           this.selectedAddress = coors.address
         }
@@ -50,11 +55,14 @@ export class RequestAddressFieldComponent implements OnInit {
 
   selectAddress(ev) {
     this.selectedAddress = ev.target.value
-    let coords = {
+    let coors = {
       latitude: null,
       longitude: null,
-      address: this.selectedAddress
+      address: this.selectedAddress,
+      valid: false
     }
-    this.gotCoordinates.emit(coords)
+    if (this.selectedAddress.length > 1 || this.selectedAddress.length == 0)
+      coors.valid = true
+    this.gotCoordinates.emit(coors)
   }
 }

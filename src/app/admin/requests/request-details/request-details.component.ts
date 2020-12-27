@@ -48,6 +48,7 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
   specialConditions = SPECIAL_CONDITIONS
 
   existentBeneficiary = false //Testing for the beneficiary component
+  validAddress = true
 
   constructor(private requestsFacade: RequestsFacade) {}
 
@@ -128,14 +129,7 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
   }
 
   updateAdress(event: coordinates) {
-    console.log(
-      '🚀 ~ file: request-details.component.ts ~ line 130 ~ RequestDetailsComponent ~ updateAdress ~ event',
-      event
-    )
     this.form.get('address').patchValue(event.address)
-    console.log(
-      "🚀 ~ file: request-details.component.ts ~ line 136 ~ RequestDetailsComponent ~ updateAdress ~ this.form.get('address')",
-      this.form.get('address').value
-    )
+    this.validAddress = event.valid
   }
 }

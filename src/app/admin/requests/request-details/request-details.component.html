@@ -125,6 +125,9 @@
         <mat-error *ngIf="form.get('address').invalid && form.touched">
           atenție, eroare - cîmp obligatoriu!
         </mat-error>
+        <mat-error *ngIf="!validAddress && form.touched">
+          atenție, eroare - adresa nu a fost găsită!
+        </mat-error>
       </div>
 
       <!-- <div class="fields_row">
