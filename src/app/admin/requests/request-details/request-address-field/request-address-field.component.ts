@@ -1,7 +1,15 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core'
+import {
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+  Injectable
+} from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
+import { HttpClient } from '@angular/common/http'
 import { EsriMapComponent } from '@app/shared/esri-map/esri-map.component'
-import { first } from 'rxjs/operators'
+import { Observable, throwError } from 'rxjs'
+import { catchError, retry, first } from 'rxjs/operators'
 
 export interface coordinates {
   latitude: number
@@ -18,7 +26,7 @@ export interface coordinates {
 export class RequestAddressFieldComponent implements OnInit {
   @Output() gotCoordinates = new EventEmitter<coordinates>()
   selectedAddress = ''
-  constructor(private matDialog: MatDialog) {}
+  constructor(private matDialog: MatDialog, private http: HttpClient) {}
 
   ngOnInit(): void {}
 
@@ -61,8 +69,24 @@ export class RequestAddressFieldComponent implements OnInit {
       address: this.selectedAddress,
       valid: false
     }
-    if (this.selectedAddress.length > 1 || this.selectedAddress.length == 0)
+    if (
+      this.checkAddressExists(this.selectedAddress) ||
+      this.selectedAddress.length == 0
+    )
       coors.valid = true
     this.gotCoordinates.emit(coors)
+  }
+
+  checkAddressExists(address) {
+    let url =
+      'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=' +
+      address +
+      '&category=&outFields=*&forStorage=false&f=pjson'
+    let foundAdress
+    this.http.get(url).subscribe((yourdata) => {
+      console.log('you have your data: ' + JSON.stringify(yourdata))
+      // foundAdress = yourdata.toObject.candidates[0].address
+    })
+    return true
   }
 }

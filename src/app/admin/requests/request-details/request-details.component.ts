@@ -8,30 +8,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { SPECIAL_CONDITIONS, ZONES } from '@app/shared/constants'
 import { RequestsFacade } from '../requests.facade'
 import { coordinates } from './request-address-field/request-address-field.component'
-
-export enum ILNESS_OPTIONS {
-  'None' = 'Nu are',
-  'Has symptoms' = 'Are simptome'
-}
-
-export const BENEFICIARY_NEEDS = [
-  {
-    label: 'Food',
-    value: 'Produse Alimentare'
-  },
-  {
-    label: 'Drugs',
-    value: 'Medicamente'
-  },
-  {
-    label: 'Transport',
-    value: 'Transport Persoana'
-  },
-  {
-    label: 'Payment',
-    value: 'Achitare Facturi'
-  }
-]
+import { RequestTypeUpdated } from '../../../shared/models/requests'
 
 @Component({
   templateUrl: './request-details.component.html',
@@ -41,10 +18,7 @@ export const BENEFICIARY_NEEDS = [
 export class RequestDetailsComponent implements OnInit, OnDestroy {
   form: FormGroup
   zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
-  needs = BENEFICIARY_NEEDS
-  ilnessOptions: Array<string> = Object.values(ILNESS_OPTIONS).filter((key) =>
-    isNaN(+key)
-  )
+  needs = RequestTypeUpdated
   specialConditions = SPECIAL_CONDITIONS
 
   existentBeneficiary = false //Testing for the beneficiary component
@@ -52,25 +26,7 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
 
   constructor(private requestsFacade: RequestsFacade) {}
 
-  onSubmit(ev: Event) {
-    // Transform the values for backend
-    this.form
-      .get('need')
-      .setValue(
-        this.getEnumKeyByEnumValue(
-          BENEFICIARY_NEEDS,
-          this.form.get('need').value
-        )
-      )
-    this.form
-      .get('ilness')
-      .setValue(
-        this.getEnumKeyByEnumValue(
-          ILNESS_OPTIONS,
-          this.form.get('ilness').value
-        )
-      )
-  }
+  onSubmit(ev: Event) {}
 
   ngOnInit(): void {
     this.form = new FormGroup({

@@ -1,9 +1,11 @@
 <div class="address">
   <input
     matInput
-    (change)="selectAddress($event)"
     [(ngModel)]="selectedAddress"
+    (change)="selectAddress($event)"
   />
+  <!-- [ng-model-options]="{debounce: 2000, standalone: true}"
+    [ng-change]="selectAddress($event)" -->
   <img
     class="icon"
     *ngIf="selectedAddress.length > 0; else incorrect"
