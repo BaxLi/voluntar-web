@@ -1,7 +1,17 @@
-@import "https://js.arcgis.com/4.14/esri/themes/light/main.css";
+@import 'https://js.arcgis.com/4.14/esri/themes/light/main.css';
 
 :host,
 map {
   height: 500px;
   width: 100%;
+}
+
+:host ::ng-deep .mat-card-header-text {
+  margin: 0px !important;
+}
+
+:host ::ng-deep .mat-card-actions,
+.mat-card-subtitle,
+.mat-card-content {
+  margin-bottom: 5px;
 }

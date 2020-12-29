@@ -41,6 +41,7 @@ export interface IRequest {
   fixer: string
 
   paying_by_card: boolean
+  type: RequestType
   warm_lunch: boolean
   grocery: boolean
   medicine: boolean

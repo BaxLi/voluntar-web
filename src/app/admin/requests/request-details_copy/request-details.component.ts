@@ -16,15 +16,21 @@ import { TagsFacade } from '@shared/tags/tags.facade'
 export class RequestDetailsComponent implements OnDestroy {
   private componentDestroyed$ = new Subject()
 
-  currentRequestId$ = this.route.paramMap.pipe(map((params) => params.get('id')))
+  currentRequestId$ = this.route.paramMap.pipe(
+    map((params) => params.get('id'))
+  )
   currentRequest$ = this.currentRequestId$.pipe(
-    switchMap((id) => (id ? this.requestsFacade.requestDetails$ : of(null as IRequestDetails))),
+    switchMap((id) =>
+      id ? this.requestsFacade.requestDetails$ : of(null as IRequestDetails)
+    ),
     takeUntil(this.componentDestroyed$)
   )
 
   offers$ = this.tagsFacade.offersTags$.pipe(
     // Don't like this option, but it's good for now
-    map((offers) => offers.filter((offer) => ['Livrarea', 'Transport'].includes(offer.ro)))
+    map((offers) =>
+      offers.filter((offer) => ['Livrarea', 'Transport'].includes(offer.ro))
+    )
   )
 
   constructor(
@@ -52,13 +58,17 @@ export class RequestDetailsComponent implements OnDestroy {
   }
 
   onCopy() {
-    this.currentRequest$.pipe(withLatestFrom(this.offers$)).subscribe(([request, offers]) => {
-      const requestText = `Nume: ${request.first_name} ${request.last_name}\nTel: ${request.phone}\nAge: ${
-        request.age
-      }\nAddress: ${request.address}\nOffer: ${offers.find((o) => request.offer === o._id).ro}\nComment: ${
-        request.fixer_comment
-      }`
-      this.clipboard.copy(requestText)
-    })
+    this.currentRequest$
+      .pipe(withLatestFrom(this.offers$))
+      .subscribe(([request, offers]) => {
+        const requestText = `Nume: ${request.first_name} ${
+          request.last_name
+        }\nTel: ${request.phone}\nAge: ${request.age}\nAddress: ${
+          request.address
+        }\nOffer: ${offers.find((o) => request.offer === o._id).ro}\nComment: ${
+          request.fixer_comment
+        }`
+        this.clipboard.copy(requestText)
+      })
   }
 }
