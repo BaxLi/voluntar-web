@@ -1,11 +1,9 @@
 import {
-  ApplicationRef,
   ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
   Output,
@@ -18,7 +16,8 @@ import { RequestsFacade } from '../../requests.facade'
 import { loadModules } from 'esri-loader'
 import esri = __esri // Esri TypeScript Types
 import { ZONES } from '@app/shared/constants'
-import { FormControl, FormGroup, Validators } from '@angular/forms'
+import { FormControl, FormGroup } from '@angular/forms'
+import { VolunteersFacade } from '@app/admin/volunteers/volunteers.facade'
 
 // import Map from "@arcgis/core/Map"
 // import MapView from "@arcgis/core/views/MapView"
@@ -53,6 +52,9 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   private coordsWidget: HTMLElement
   public zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
   form: FormGroup
+  stepOnForm: number = 1
+  buttonSelectorTextOnMap: string = 'Următor'
+  volunteers: any = '-+-'
   public selectedRequests: IRequest[] = []
   private simpleMarkerSymbol = {
     type: 'simple-marker',
@@ -78,10 +80,13 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
 
   constructor(
     public requestsFacade: RequestsFacade,
+    public volunteersFacade: VolunteersFacade,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
+    this.stepOnForm = 1
+
     this.form = new FormGroup({
       city_sector: new FormControl(''),
       needs: new FormControl('')
@@ -89,6 +94,15 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
     from(this.initializeMap()).subscribe(
       (mapView) => {
         this.mapLoadedEvent.emit(true)
+        //-- TODO -
+        //volunteers section - need to reengineer
+        const allVolunteersFromBD = { pageSize: 20000, pageIndex: 1 }
+        this.volunteersFacade.getVolunteers(allVolunteersFromBD)
+
+        this.volunteersFacade.volunteers$.subscribe((vol) => {
+          this.volunteers = vol
+          console.log('VOlunteers=', vol)
+        })
       },
       (err) => console.log(err),
       () => {
@@ -172,14 +186,12 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
       })
 
       this.mapView.map.layers.on('after-changes', function (event) {
-        console.log(event, ' GRAPHIC was added/removed from the map.')
+        console.log(' GRAPHIC was added/removed from the map.', event)
       })
 
       this.widgetViewCoordinatesInit()
 
       this.mapView.on('pointer-move', (ev) => {
-        // console.log("Search obj", searchWidget );
-
         const pt = this.mapView.toMap({ x: ev.x, y: ev.y })
         this.coordsWidget.innerHTML =
           'Lat/Lon ' +
@@ -241,6 +253,23 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   }
 
   onSubmit(ev): void {}
+
+  nextFormStep(): void {
+    this.stepOnForm === 3 ? (this.stepOnForm = 1) : this.stepOnForm++
+    switch (this.stepOnForm) {
+      case 1:
+        this.buttonSelectorTextOnMap = 'Următor'
+        break
+      case 2:
+        this.buttonSelectorTextOnMap = 'Alocă'
+        break
+      case 3:
+        this.buttonSelectorTextOnMap = 'Sarcină Nouă'
+        break
+      default:
+        this.buttonSelectorTextOnMap = 'ERROR !!!'
+    }
+  }
 
   ngOnDestroy() {
     console.log('🚀 RequestsMapComponent ~ ngOnDestroy ~ ngOnDestroy')
