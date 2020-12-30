@@ -28,6 +28,7 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
 
   onSubmit(ev: Event) {}
 
+
   ngOnInit(): void {
     this.form = new FormGroup({
       first_name: new FormControl(null, [Validators.required]),
