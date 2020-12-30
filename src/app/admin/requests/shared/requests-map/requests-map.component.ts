@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -6,6 +7,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild
 } from '@angular/core'
 import { IRequest } from '@app/shared/models'
@@ -13,8 +15,15 @@ import { from, Subscription } from 'rxjs'
 import { RequestsFacade } from '../../requests.facade'
 import { loadModules } from 'esri-loader'
 import esri = __esri // Esri TypeScript Types
-import * as GraphicsLayer from 'esri/layers/GraphicsLayer'
-import { distinctUntilChanged } from 'rxjs/operators'
+import { ZONES } from '@app/shared/constants'
+import { FormControl, FormGroup } from '@angular/forms'
+import { VolunteersFacade } from '@app/admin/volunteers/volunteers.facade'
+
+// import Map from "@arcgis/core/Map"
+// import MapView from "@arcgis/core/views/MapView"
+// import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer"
+// import Graphic from "@arcgis/core/Graphic"
+// import Search from "@arcgis/core/widgets/Search"
 
 export interface esriPoint {
   type: string
@@ -30,16 +39,23 @@ export interface esriPoint {
 export class RequestsMapComponent implements OnDestroy, OnInit {
   @Input() coors: [number, number] = [28.825140232956283, 47.01266177894471]
   @Output() mapLoadedEvent = new EventEmitter<boolean>()
+
+  @Output() mapClickedEvent = new EventEmitter<boolean>()
+
   @ViewChild('map', { static: true }) private mapViewEl: ElementRef
 
-  private loaded: boolean
-  private search: esri.Search
   private mapView: esri.MapView = null
   private graphicsLayer: esri.GraphicsLayer = null
   private Graphic: any = null
-  private requests: IRequest[] = []
+  public requests: IRequest[] = []
   private subRequests$: Subscription
   private coordsWidget: HTMLElement
+  public zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
+  form: FormGroup
+  stepOnForm: number = 1
+  buttonSelectorTextOnMap: string = 'Următor'
+  volunteers: any = '-+-'
+  public selectedRequests: IRequest[] = []
   private simpleMarkerSymbol = {
     type: 'simple-marker',
     color: [255, 255, 255, 0.3],
@@ -52,25 +68,41 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   }
   private changedMarkerSymbol = {
     type: 'simple-marker',
-    color: [226, 119, 40], // orange
-    width: 30,
-    style: 'diamond',
-    size: 40,
+    color: [60, 210, 120], // green
+    width: 3,
+    // style: 'diamond',
+    // size: 4,
     outline: {
       color: [0, 0, 0, 0.7],
       width: 1
     }
   }
 
-  private newColor: __esri.Color
-
-  constructor(private requestsFacade: RequestsFacade) {}
+  constructor(
+    public requestsFacade: RequestsFacade,
+    public volunteersFacade: VolunteersFacade,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
+    this.stepOnForm = 1
+
+    this.form = new FormGroup({
+      city_sector: new FormControl(''),
+      needs: new FormControl('')
+    })
     from(this.initializeMap()).subscribe(
       (mapView) => {
-        // this.loaded = this.view.ready
         this.mapLoadedEvent.emit(true)
+        //-- TODO -
+        //volunteers section - need to reengineer
+        const allVolunteersFromBD = { pageSize: 20000, pageIndex: 1 }
+        this.volunteersFacade.getVolunteers(allVolunteersFromBD)
+
+        this.volunteersFacade.volunteers$.subscribe((vol) => {
+          this.volunteers = vol
+          console.log('VOlunteers=', vol)
+        })
       },
       (err) => console.log(err),
       () => {
@@ -86,13 +118,13 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
         MapView,
         Graphic,
         GraphicsLayer,
-        Point
+        Search
       ]: any = await loadModules([
         'esri/Map',
         'esri/views/MapView',
         'esri/Graphic',
         'esri/layers/GraphicsLayer',
-        'esri/geometry/Point'
+        'esri/widgets/Search'
       ])
 
       this.graphicsLayer = new GraphicsLayer({ title: 'Feature test' })
@@ -100,48 +132,61 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
         basemap: 'streets-navigation-vector',
         layers: [this.graphicsLayer]
       }) //  topo-vector
+
       this.Graphic = Graphic
       this.mapView = new MapView({
         container: this.mapViewEl.nativeElement,
         zoom: 12,
         center: this.coors,
-        map: map,
-        highlightOptions: {
-          color: 'green'
-        }
+        map: map
       })
+      const searchWidget = new Search({ view: this.mapView })
+      this.mapView.ui.add(searchWidget, { position: 'top-right' })
 
       this.mapView.on('click', (ev) => {
         this.mapView.hitTest(ev.screenPoint).then((res) => {
-          console.log('this.mapView.hitTest ~ res', res.results)
-          res.results.forEach((g) => {
-            const gr: esri.Graphic = g.graphic
+          if (res.results[0].graphic.attributes?.requestId === undefined) return
 
-            if (gr) {
-              const newGraphics = gr.clone()
-              this.mapView.graphics.remove(gr)
-              // @ts-expect-error: they exist in Point class
-              const lat = gr.geometry?.latitude || 47.01820503506154
-              // @ts-expect-error:
-              const lon = gr.geometry?.longitude || 28.812844986831664
+          const gr: esri.Graphic = res.results[0].graphic
+          if (gr) {
+            const exist = this.selectedRequests.find(
+              (r) => r._id === gr.attributes.requestId
+            )
+            const updatePointOnMap = new this.Graphic({
+              geometry: {
+                type: 'point',
+                // @ts-expect-error: they exist in Point class
+                latitude: gr.geometry?.latitude || 47.01820503506154,
+                // @ts-expect-error:
+                longitude: gr.geometry?.longitude || 28.812844986831664
+              },
+              symbol: !exist
+                ? this.changedMarkerSymbol
+                : this.simpleMarkerSymbol,
+              attributes: gr.attributes
+            })
 
-              const gt = new this.Graphic({
-                geometry: {
-                  type: 'point',
-                  latitude: lat || 47.01820503506154,
-                  longitude: lon || 28.812844986831664
-                },
-                symbol: this.changedMarkerSymbol
-              })
+            this.mapView.graphics.remove(gr)
+            this.mapView.graphics.add(updatePointOnMap)
 
-              this.mapView.graphics.add(gt)
-            }
-          })
+            if (!exist)
+              this.selectedRequests.push(
+                this.requests.find(
+                  (r) => r._id === updatePointOnMap.attributes.requestId
+                )
+              )
+            else
+              this.selectedRequests = this.selectedRequests.filter(
+                (r) => r !== exist
+              )
+            this.cdr.detectChanges()
+            console.log('selected arr=', this.selectedRequests)
+          }
         })
       })
 
       this.mapView.map.layers.on('after-changes', function (event) {
-        console.log(event, ' GRAPHIC was added/removed from the map.')
+        console.log(' GRAPHIC was added/removed from the map.', event)
       })
 
       this.widgetViewCoordinatesInit()
@@ -190,7 +235,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
       new graphic({
         geometry: point,
         symbol: this.simpleMarkerSymbol,
-        attributes: { request: req.first_name }
+        attributes: { requestId: req._id }
       })
     )
   }
@@ -207,9 +252,27 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
     this.mapView.ui.add(this.coordsWidget, 'bottom-right')
   }
 
+  onSubmit(ev): void {}
+
+  nextFormStep(): void {
+    this.stepOnForm === 3 ? (this.stepOnForm = 1) : this.stepOnForm++
+    switch (this.stepOnForm) {
+      case 1:
+        this.buttonSelectorTextOnMap = 'Următor'
+        break
+      case 2:
+        this.buttonSelectorTextOnMap = 'Alocă'
+        break
+      case 3:
+        this.buttonSelectorTextOnMap = 'Sarcină Nouă'
+        break
+      default:
+        this.buttonSelectorTextOnMap = 'ERROR !!!'
+    }
+  }
+
   ngOnDestroy() {
     console.log('🚀 RequestsMapComponent ~ ngOnDestroy ~ ngOnDestroy')
-
     this.subRequests$.unsubscribe()
     this.mapView.on('click', null)
     this.mapView.on('pointer-move', null)
