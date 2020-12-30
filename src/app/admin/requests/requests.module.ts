@@ -1,15 +1,17 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RequestsComponent } from './requests.component';
-import { RequestDetailsComponent } from './request-details/request-details.component';
-import { RequestsListComponent } from './requests-list/requests-list.component';
-import { MaterialComponentsModule } from '@shared/material.module';
-import { SharedModule } from '@shared/shared.module';
-import { RequestFormComponent } from './shared/request-form/request-form.component';
-import { NgxMaskModule } from 'ngx-mask';
-import { RequestsMapComponent } from './shared/requests-map/requests-map.component';
-import { RouterModule } from '@angular/router';
-import { requestsRoutes } from './requests.routes';
+import { NgModule } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { HttpClientModule } from '@angular/common/http'
+import { RequestsComponent } from './requests.component'
+import { RequestDetailsComponent } from './request-details/request-details.component'
+import { RequestsListComponent } from './requests-list/requests-list.component'
+import { MaterialComponentsModule } from '@shared/material.module'
+import { SharedModule } from '@shared/shared.module'
+import { RequestFormComponent } from './shared/request-form/request-form.component'
+import { NgxMaskModule } from 'ngx-mask'
+import { RequestsMapComponent } from './shared/requests-map/requests-map.component'
+import { RouterModule } from '@angular/router'
+import { requestsRoutes } from './requests.routes'
+import { RequestAddressFieldComponent } from './request-details/request-address-field/request-address-field.component'
 
 @NgModule({
   declarations: [
@@ -18,6 +20,7 @@ import { requestsRoutes } from './requests.routes';
     RequestsListComponent,
     RequestFormComponent,
     RequestsMapComponent,
+    RequestAddressFieldComponent
   ],
   imports: [
     CommonModule,
@@ -25,6 +28,7 @@ import { requestsRoutes } from './requests.routes';
     MaterialComponentsModule,
     SharedModule,
     NgxMaskModule.forChild(),
-  ],
+    HttpClientModule
+  ]
 })
 export class RequestsModule {}
