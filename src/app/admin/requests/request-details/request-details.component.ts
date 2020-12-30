@@ -20,14 +20,12 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
   zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
   needs = RequestTypeUpdated
   specialConditions = SPECIAL_CONDITIONS
-
-  existentBeneficiary = false //Testing for the beneficiary component
+  existentBeneficiary = false
   validAddress = true
 
   constructor(private requestsFacade: RequestsFacade) {}
 
   onSubmit(ev: Event) {}
-
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -45,21 +43,21 @@ export class RequestDetailsComponent implements OnInit, OnDestroy {
         Validators.maxLength(8),
         Validators.pattern(/^([0-9]){8}$/)
       ]),
-      landline: new FormControl(
-        null,
-        // because we add prefix 22 at form submit.
-        [
-          Validators.required,
-          Validators.minLength(6),
-          Validators.maxLength(6),
-          Validators.pattern(/^([0-9]){6}$/)
-        ]
-      ),
+      landline: new FormControl(null, [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.maxLength(6),
+        Validators.pattern(/^([0-9]){6}$/)
+      ]),
       special_condition: new FormControl(null, [Validators.required]),
       ilness: new FormControl('', [Validators.required]),
       need: new FormControl('', [Validators.required]),
       comments: new FormControl(''),
-      password: new FormControl(null, [Validators.required]),
+      password: new FormControl(null, [
+        Validators.required,
+        Validators.minLength(5),
+        Validators.maxLength(5)
+      ]),
       urgent: new FormControl(false)
     })
   }

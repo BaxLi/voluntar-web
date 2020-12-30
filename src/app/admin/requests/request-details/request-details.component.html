@@ -161,9 +161,9 @@
             style="width: 230px"
             placeholder="Alege"
           >
-            <mat-option [value]="'None'"
-              ><mat-icon></mat-icon>Nu are</mat-option
-            >
+            <mat-option [value]="'None'">
+              <mat-icon></mat-icon>Nu are
+            </mat-option>
             <mat-option
               *ngFor="let item of specialConditions"
               [value]="item.value"
@@ -228,8 +228,8 @@
             style="width: 230px"
             placeholder="Alege"
           >
-            <mat-option [value]="false"
-              ><mat-icon></mat-icon>Nu are
+            <mat-option [value]="false">
+              <mat-icon></mat-icon>Nu are
             </mat-option>
             <mat-option [value]="true">
               <img

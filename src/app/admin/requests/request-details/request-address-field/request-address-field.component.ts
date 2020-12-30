@@ -46,9 +46,8 @@ export class RequestAddressFieldComponent implements OnInit {
           if (coors.address.length > 1 || coors.address.length == 0)
             coors.valid = true
           else coors.valid = false
-          console.log(coors.valid)
           this.gotCoordinates.emit(coors)
-          this.selectedAddress = coors.address
+          this.selectedAddress = coors.address || ''
         }
       })
   }

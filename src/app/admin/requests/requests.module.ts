@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
-import { HttpClientModule } from '@angular/common/http'
 import { RequestsComponent } from './requests.component'
 import { RequestDetailsComponent } from './request-details/request-details.component'
 import { RequestsListComponent } from './requests-list/requests-list.component'
@@ -27,8 +26,7 @@ import { RequestAddressFieldComponent } from './request-details/request-address-
     RouterModule.forChild(requestsRoutes),
     MaterialComponentsModule,
     SharedModule,
-    NgxMaskModule.forChild(),
-    HttpClientModule
+    NgxMaskModule.forChild()
   ]
 })
 export class RequestsModule {}
