@@ -252,6 +252,9 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
     this.mapView.ui.add(this.coordsWidget, 'bottom-right')
   }
 
+  citySectorChanged() {
+    console.log('sector=', this.form.get('city_sector').value)
+  }
   onSubmit(ev): void {}
 
   nextFormStep(): void {

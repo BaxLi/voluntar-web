@@ -8,16 +8,6 @@ map {
   width: 100%;
 }
 
-// :host ::ng-deep .mat-card-header-text {
-//   margin: 0px !important;
-// }
-
-// :host ::ng-deep .mat-card-actions,
-// .mat-card-subtitle,
-// .mat-card-content {
-//   margin-bottom: 5px;
-// }
-
 mat-card {
   width: 100%;
   height: 73px;
@@ -38,9 +28,22 @@ mat-card {
   }
 }
 
-// mat-card:hover {
-//   background-color:red;
-// }
+.selectBeneficiary {
+  height: 36px;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 100%;
+}
+
+.filtersZone {
+  height: 32px;
+  background: #fdfdfd;
+  border: 1px solid $borderColor;
+  box-sizing: border-box;
+  border-radius: 0px;
+}
 
 mat-icon {
   font-size: 6px;

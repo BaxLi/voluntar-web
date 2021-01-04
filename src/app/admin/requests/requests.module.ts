@@ -11,6 +11,7 @@ import { RequestsMapComponent } from './shared/requests-map/requests-map.compone
 import { RouterModule } from '@angular/router'
 import { requestsRoutes } from './requests.routes'
 import { RequestAddressFieldComponent } from './request-details/request-address-field/request-address-field.component'
+import { FilterZonesComponent } from './shared/requests-map/filter-zones/filter-zones.component'
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { RequestAddressFieldComponent } from './request-details/request-address-
     RequestsListComponent,
     RequestFormComponent,
     RequestsMapComponent,
-    RequestAddressFieldComponent
+    RequestAddressFieldComponent,
+    FilterZonesComponent
   ],
   imports: [
     CommonModule,
