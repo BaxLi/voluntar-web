@@ -9,27 +9,12 @@ import {
   Output,
   ViewChild
 } from '@angular/core'
-import { IRequest } from '@app/shared/models'
-import { from, Subscription } from 'rxjs'
-import { RequestsFacade } from '../../requests.facade'
 import { loadModules } from 'esri-loader'
-import esri = __esri // Esri TypeScript Types
-import { ZONES } from '@app/shared/constants'
-import { FormControl, FormGroup } from '@angular/forms'
-import { VolunteersFacade } from '@app/admin/volunteers/volunteers.facade'
-import { FilterZonesComponent } from './filter-zones/filter-zones.component'
-
-// import Map from "@arcgis/core/Map"
-// import MapView from "@arcgis/core/views/MapView"
-// import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer"
-// import Graphic from "@arcgis/core/Graphic"
-// import Search from "@arcgis/core/widgets/Search"
-
-export interface esriPoint {
-  type: string
-  longitude: number
-  latitude: number
-}
+import { from } from 'rxjs'
+import type Map from 'esri/Map'
+import type MapView from 'esri/views/MapView'
+import type Search from 'esri/widgets/Search'
+import type BasemapToggle from 'esri/widgets/BasemapToggle'
 
 @Component({
   selector: 'app-requests-map',
@@ -42,7 +27,9 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
 
   @Output() mapClickedEvent = new EventEmitter<boolean>()
 
-  @ViewChild('map', { static: true }) private mapViewEl: ElementRef
+  private loaded: boolean
+  private search: Search
+  private view: MapView = null
 
   private mapView: esri.MapView = null
   private graphicsLayer: esri.GraphicsLayer = null
@@ -85,41 +72,24 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit() {
-    this.stepOnForm = 1
-
-    this.form = new FormGroup({
-      city_sector: new FormControl(''),
-      needs: new FormControl('')
+    // Initialize MapView and return an instance of MapView
+    from(this.initializeMap()).subscribe(() => {
+      // The map has been initialized
+      this.loaded = this.view.ready
+      this.mapLoadedEvent.emit(true)
     })
-    from(this.initializeMap()).subscribe(
-      (mapView) => {
-        this.mapLoadedEvent.emit(true)
-        //-- TODO -
-        //volunteers section - need to reengineer
-        const allVolunteersFromBD = { pageSize: 20000, pageIndex: 1 }
-        this.volunteersFacade.getVolunteers(allVolunteersFromBD)
-
-        this.volunteersFacade.volunteers$.subscribe((vol) => {
-          this.volunteers = vol
-          console.log('VOlunteers=', vol)
-        })
-      },
-      (err) => console.log(err),
-      () => {
-        console.log('FINISH!')
-      }
-    )
   }
 
   async initializeMap() {
     try {
-      const [
-        Map,
-        MapView,
-        Graphic,
-        GraphicsLayer,
-        Search
-      ]: any = await loadModules([
+      type Modules = [
+        typeof Map,
+        typeof MapView,
+        typeof Search,
+        typeof BasemapToggle
+      ]
+
+      const loadedModules = await loadModules<Modules>([
         'esri/Map',
         'esri/views/MapView',
         'esri/Graphic',
@@ -133,85 +103,39 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
         layers: [this.graphicsLayer]
       }) //  topo-vector
 
-      this.Graphic = Graphic
-      this.mapView = new MapView({
+      const [
+        MapConstructor,
+        MapViewConstructor,
+        SearchConstructor,
+        BasemapToggleConstructor
+      ] = loadedModules
+
+      const map = new MapConstructor({ basemap: 'streets-navigation-vector' })
+      this.view = new MapViewConstructor({
         container: this.mapViewEl.nativeElement,
         zoom: 12,
-        center: this.coors,
-        map: map
-      })
-      const searchWidget = new Search({ view: this.mapView })
-      this.mapView.ui.add(searchWidget, { position: 'top-right' })
-
-      this.mapView.on('click', (ev) => {
-        this.mapView.hitTest(ev.screenPoint).then((res) => {
-          if (res.results[0].graphic.attributes?.requestId === undefined) return
-
-          const gr: esri.Graphic = res.results[0].graphic
-          if (gr) {
-            const exist = this.selectedRequests.find(
-              (r) => r._id === gr.attributes.requestId
-            )
-            const updatePointOnMap = new this.Graphic({
-              geometry: {
-                type: 'point',
-                // @ts-expect-error: they exist in Point class
-                latitude: gr.geometry?.latitude || 47.01820503506154,
-                // @ts-expect-error:
-                longitude: gr.geometry?.longitude || 28.812844986831664
-              },
-              symbol: !exist
-                ? this.changedMarkerSymbol
-                : this.simpleMarkerSymbol,
-              attributes: gr.attributes
-            })
-
-            this.mapView.graphics.remove(gr)
-            this.mapView.graphics.add(updatePointOnMap)
-
-            if (!exist)
-              this.selectedRequests.push(
-                this.requests.find(
-                  (r) => r._id === updatePointOnMap.attributes.requestId
-                )
-              )
-            else
-              this.selectedRequests = this.selectedRequests.filter(
-                (r) => r !== exist
-              )
-            this.cdr.detectChanges()
-            console.log('selected arr=', this.selectedRequests)
-          }
-        })
+        map
       })
 
-      this.mapView.map.layers.on('after-changes', function (event) {
-        console.log(' GRAPHIC was added/removed from the map.', event)
-      })
+      this.search = new SearchConstructor()
+      this.view.ui.add([this.search], 'top-right')
+      this.view.ui.add(
+        new BasemapToggleConstructor({
+          view: this.view,
+          nextBasemap: 'hybrid'
+        }),
+        'bottom-left'
+      )
 
-      this.widgetViewCoordinatesInit()
-
-      this.mapView.on('pointer-move', (ev) => {
-        const pt = this.mapView.toMap({ x: ev.x, y: ev.y })
-        this.coordsWidget.innerHTML =
-          'Lat/Lon ' +
-          pt.latitude.toFixed(5) +
-          ' ' +
-          pt.longitude.toFixed(5) +
-          ' | Scale 1:' +
-          Math.round(this.mapView.scale * 1) / 1 +
-          ' | Zoom ' +
-          this.mapView.zoom
-      })
-
-      // this.mapView.on('mouseOver', (ev) => {})
-
-      this.subRequests$ = this.requestsFacade.requests$.subscribe(
-        (arr) => {
-          this.requests = arr
-          arr.forEach((el) => {
-            this.addRequestToMap(el, this.mapView, this.Graphic)
-          })
+      this.view.when(
+        async () => {
+          const [latitude, longitude] = this.coors
+          await this.view.goTo(
+            [
+              latitude || 47.01266177894471,
+              longitude || 28.825140232956283
+            ].reverse()
+          )
         },
 
         (err) => console.log('facade subscription error:', err),
