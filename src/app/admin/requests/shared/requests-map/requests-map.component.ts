@@ -1,20 +1,18 @@
 import {
   ChangeDetectorRef,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output,
-  ViewChild
+  Output
 } from '@angular/core'
 import { loadModules } from 'esri-loader'
 import { from } from 'rxjs'
 import type Map from 'esri/Map'
-import type MapView from 'esri/views/MapView'
-import type Search from 'esri/widgets/Search'
-import type BasemapToggle from 'esri/widgets/BasemapToggle'
+import MapView from 'esri/views/MapView'
+import Search from 'esri/widgets/Search'
+import BasemapToggle from 'esri/widgets/BasemapToggle'
 
 @Component({
   selector: 'app-requests-map',
