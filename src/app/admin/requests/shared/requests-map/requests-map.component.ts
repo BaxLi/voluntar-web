@@ -7,7 +7,6 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
   ViewChild
 } from '@angular/core'
 import { IRequest } from '@app/shared/models'
@@ -18,6 +17,7 @@ import esri = __esri // Esri TypeScript Types
 import { ZONES } from '@app/shared/constants'
 import { FormControl, FormGroup } from '@angular/forms'
 import { VolunteersFacade } from '@app/admin/volunteers/volunteers.facade'
+import { FilterZonesComponent } from './filter-zones/filter-zones.component'
 
 // import Map from "@arcgis/core/Map"
 // import MapView from "@arcgis/core/views/MapView"

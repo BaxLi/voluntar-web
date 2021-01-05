@@ -29,6 +29,7 @@ import { FilterZonesComponent } from './shared/requests-map/filter-zones/filter-
     MaterialComponentsModule,
     SharedModule,
     NgxMaskModule.forChild()
-  ]
+  ],
+  exports: []
 })
 export class RequestsModule {}

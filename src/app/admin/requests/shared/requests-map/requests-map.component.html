@@ -43,8 +43,43 @@
     <!-- TODO  -->
     <!-- -------STEP 1---------- -->
     <div *ngIf="stepOnForm === 1">
-      <app-filter-zones> </app-filter-zones>
+      <app-filter-zones [zone]="selectedRequests"> </app-filter-zones>
+      <div
+        fxLayout="column"
+        fxLayoutAlign="center center"
+        style="margin: 5px; width: 100%"
+      >
+        <div
+          fxLayout="row"
+          fxLayoutAlign="center center"
+          style="
+            background-color: #ffffff !important;
+            border: 1px solid red;
+            height: 10px;
+            width: 100%;
+          "
+        >
+          <div *ngFor="let a of [].constructor(3); let i = index">
+            <div *ngIf="i + 1 !== stepOnForm; else filledpoint">
+              <mat-icon>gps_not_fixed</mat-icon>
+            </div>
+            <ng-template #filledpoint>
+              <mat-icon>gps_fixed</mat-icon>
+            </ng-template>
+          </div>
+        </div>
+
+        <button
+          mat-flat-button
+          color="primary"
+          style="width: 100px"
+          (click)="nextFormStep()"
+        >
+          {{ buttonSelectorTextOnMap }}
+        </button>
+      </div>
     </div>
+
     <!-- --------STEP 2------------------- -->
     <ng-container *ngIf="stepOnForm === 2">
       <cdk-virtual-scroll-viewport itemSize="50" class="selectionMapSection">

@@ -7,13 +7,17 @@ import { IRequest } from '@app/shared/models'
   styleUrls: ['./filter-zones.component.scss']
 })
 export class FilterZonesComponent implements OnInit {
-  @Input() selectedRequests: IRequest[]
+  @Input('zone') selectedRequests: IRequest[] = []
 
   constructor() {
-    console.log('constr')
+    console.log('!!!!! app-filter-zones  constr')
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     console.log('filters map on')
+    console.log(
+      '🚀 ~ file: filter-zones.component.ts ~ line 11 ~ FilterZonesComponent ~ selectedRequests',
+      this.selectedRequests
+    )
   }
 }

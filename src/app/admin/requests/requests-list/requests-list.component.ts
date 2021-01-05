@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnInit,
+  Renderer2,
+  ViewChild
+} from '@angular/core'
 import { MatPaginator, PageEvent } from '@angular/material/paginator'
 
 import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs'
@@ -17,17 +24,29 @@ import { ActionsSubject } from '@ngrx/store'
 import { ofType } from '@ngrx/effects'
 import { saveRequestSuccessAction } from '../requests.actions'
 import { RequestDetailsComponent } from '../request-details/request-details.component'
-import { FilterInputColumns, FilterObservableSelectColumns, FilterSelectColumns } from '@shared/filter/filter.types'
+import {
+  FilterInputColumns,
+  FilterObservableSelectColumns,
+  FilterSelectColumns
+} from '@shared/filter/filter.types'
 import { KIV_ZONES } from '@shared/constants'
 
 @Component({
   templateUrl: './requests-list.component.html',
-  styleUrls: ['./requests-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./requests-list.component.scss']
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequestsListComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator
-  displayedColumns: string[] = ['icons', 'name', 'phone', 'sector', 'createdDate', 'status', 'fixer']
+  displayedColumns: string[] = [
+    'icons',
+    'name',
+    'phone',
+    'sector',
+    'createdDate',
+    'status',
+    'fixer'
+  ]
   dataSource$: Observable<IRequest[]>
   isLoading$ = this.requestsFacade.isLoading$
   count$ = this.requestsFacade.requestsCount$
@@ -92,7 +111,9 @@ export class RequestsListComponent implements OnInit {
   }
 
   getAllStatusesCount() {
-    const requests = [{}, ...this.allStatuses].map((status: any) => this.helperGetCountByStatus(status._id))
+    const requests = [{}, ...this.allStatuses].map((status: any) =>
+      this.helperGetCountByStatus(status._id)
+    )
     forkJoin(requests)
       .pipe(take(1))
       .subscribe((res) => {
@@ -101,11 +122,15 @@ export class RequestsListComponent implements OnInit {
   }
 
   helperGetCountByStatus(status: string) {
-    return this.requestsFacade.getRequestByStatus(status).pipe(map((res) => res.count))
+    return this.requestsFacade
+      .getRequestByStatus(status)
+      .pipe(map((res) => res.count))
   }
 
   operatorById$(fixer: string) {
-    return this.usersFacade.users$.pipe(map((users) => users.find((u) => u._id === fixer)))
+    return this.usersFacade.users$.pipe(
+      map((users) => users.find((u) => u._id === fixer))
+    )
   }
 
   ngOnInit() {
@@ -128,7 +153,9 @@ export class RequestsListComponent implements OnInit {
       }
     ]
 
-    this.selectColumns = [{ name: 'Is Active', value: 'is_active', array: this.isActive }]
+    this.selectColumns = [
+      { name: 'Is Active', value: 'is_active', array: this.isActive }
+    ]
   }
 
   getStatusLabel(status: string) {
@@ -204,10 +231,15 @@ export class RequestsListComponent implements OnInit {
       panelClass: 'newrequest-custom-modalbox'
     })
 
-    this.actions$.pipe(ofType(saveRequestSuccessAction), takeUntil(dialogRef.afterClosed())).subscribe(() => {
-      this.requestsFacade.getRequests(this.page, this.lastFilter)
-      this.getAllStatusesCount()
-      dialogRef.close()
-    })
+    this.actions$
+      .pipe(
+        ofType(saveRequestSuccessAction),
+        takeUntil(dialogRef.afterClosed())
+      )
+      .subscribe(() => {
+        this.requestsFacade.getRequests(this.page, this.lastFilter)
+        this.getAllStatusesCount()
+        dialogRef.close()
+      })
   }
 }
