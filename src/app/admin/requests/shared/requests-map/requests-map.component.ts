@@ -10,7 +10,6 @@ import {
   ViewChild
 } from '@angular/core'
 import { FormGroup } from '@angular/forms'
-// import { loadModules } from 'esri-loader';
 import { from, Subscription } from 'rxjs'
 import Map from '@arcgis/core/Map'
 import MapView from '@arcgis/core/views/MapView'
