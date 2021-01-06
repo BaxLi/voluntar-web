@@ -1,18 +1,26 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core'
-import { loadModules } from 'esri-loader'
-import { from } from 'rxjs'
-import type Map from 'esri/Map'
-import MapView from 'esri/views/MapView'
-import Search from 'esri/widgets/Search'
-import BasemapToggle from 'esri/widgets/BasemapToggle'
+import { FormGroup } from '@angular/forms'
+// import { loadModules } from 'esri-loader';
+import { from, Subscription } from 'rxjs'
+import Map from '@arcgis/core/Map'
+import MapView from '@arcgis/core/views/MapView'
+import Search from '@arcgis/core/widgets/Search'
+import BasemapToggle from '@arcgis/core/widgets/BasemapToggle'
+import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer'
+import { RequestsFacade } from '../../requests.facade'
+import { VolunteersFacade } from '@app/admin/volunteers/volunteers.facade'
+import { IRequest } from '@app/shared/models'
+import { ZONES } from '@app/shared/constants'
 
 @Component({
   selector: 'app-requests-map',
@@ -22,23 +30,22 @@ import BasemapToggle from 'esri/widgets/BasemapToggle'
 export class RequestsMapComponent implements OnDestroy, OnInit {
   @Input() coors: [number, number] = [28.825140232956283, 47.01266177894471]
   @Output() mapLoadedEvent = new EventEmitter<boolean>()
-
   @Output() mapClickedEvent = new EventEmitter<boolean>()
+  @ViewChild('map', { static: true }) private mapViewEl: ElementRef
 
-  private loaded: boolean
   private search: Search
   private view: MapView = null
-
-  private mapView: esri.MapView = null
-  private graphicsLayer: esri.GraphicsLayer = null
+  private map: Map = null
+  private mapView: MapView = null
+  private graphicsLayer: GraphicsLayer = null
   private Graphic: any = null
   public requests: IRequest[] = []
   private subRequests$: Subscription
   private coordsWidget: HTMLElement
   public zones: Array<string> = Object.keys(ZONES).filter((key) => isNaN(+key))
   form: FormGroup
-  stepOnForm: number = 1
-  buttonSelectorTextOnMap: string = 'Următor'
+  stepOnForm = 1
+  buttonSelectorTextOnMap = 'Următor'
   volunteers: any = '-+-'
   public selectedRequests: IRequest[] = []
   private simpleMarkerSymbol = {
@@ -70,55 +77,31 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit() {
-    // Initialize MapView and return an instance of MapView
+    // Initialize MapView
     from(this.initializeMap()).subscribe(() => {
       // The map has been initialized
-      this.loaded = this.view.ready
       this.mapLoadedEvent.emit(true)
     })
   }
 
   async initializeMap() {
     try {
-      type Modules = [
-        typeof Map,
-        typeof MapView,
-        typeof Search,
-        typeof BasemapToggle
-      ]
-
-      const loadedModules = await loadModules<Modules>([
-        'esri/Map',
-        'esri/views/MapView',
-        'esri/Graphic',
-        'esri/layers/GraphicsLayer',
-        'esri/widgets/Search'
-      ])
-
       this.graphicsLayer = new GraphicsLayer({ title: 'Feature test' })
-      const map = new Map({
+      this.map = new Map({
         basemap: 'streets-navigation-vector',
         layers: [this.graphicsLayer]
       }) //  topo-vector
 
-      const [
-        MapConstructor,
-        MapViewConstructor,
-        SearchConstructor,
-        BasemapToggleConstructor
-      ] = loadedModules
-
-      const map = new MapConstructor({ basemap: 'streets-navigation-vector' })
-      this.view = new MapViewConstructor({
+      this.view = new MapView({
         container: this.mapViewEl.nativeElement,
         zoom: 12,
-        map
+        map: this.map
       })
 
-      this.search = new SearchConstructor()
+      this.search = new Search()
       this.view.ui.add([this.search], 'top-right')
       this.view.ui.add(
-        new BasemapToggleConstructor({
+        new BasemapToggle({
           view: this.view,
           nextBasemap: 'hybrid'
         }),
@@ -135,18 +118,14 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
             ].reverse()
           )
         },
-
-        (err) => console.log('facade subscription error:', err),
-        () => {
-          console.log('faccade subscr end')
-        }
+        (err: any) => console.log('facade subscription error:', err)
       )
     } catch (error) {
       console.error(error)
     }
   }
 
-  addRequestToMap(req: IRequest, view: esri.MapView, graphic: any): void {
+  addRequestToMap(req: IRequest, view: MapView, graphic: any): void {
     const point = {
       type: 'point',
       latitude: req.latitude || 47.01820503506154,
@@ -180,6 +159,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   onSubmit(ev): void {}
 
   nextFormStep(): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.stepOnForm === 3 ? (this.stepOnForm = 1) : this.stepOnForm++
     switch (this.stepOnForm) {
       case 1:
