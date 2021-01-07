@@ -4,33 +4,32 @@ import {
   ElementRef,
   Inject,
   OnDestroy,
-  ViewChild
-} from '@angular/core'
-import { loadModules } from 'esri-loader'
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
-import { Subject } from 'rxjs'
-import type Map from 'esri/Map'
-import type Graphic from 'esri/Graphic'
-import type SimpleMarkerSymbol from 'esri/symbols/SimpleMarkerSymbol'
-import type Color from 'esri/Color'
-import type MapView from 'esri/views/MapView'
-import type Search from 'esri/widgets/Search'
-import type BasemapToggle from 'esri/widgets/BasemapToggle'
-import type LayerSearchSource from 'esri/widgets/Search/LayerSearchSource'
-import type LocatorSearchSource from 'esri/widgets/Search/LocatorSearchSource'
+  ViewChild,
+} from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
+import Map from '@arcgis/core/Map';
+import Graphic from '@arcgis/core/Graphic';
+import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
+import Color from '@arcgis/core/Color';
+import MapView from '@arcgis/core/views/MapView';
+import Search from '@arcgis/core/widgets/Search';
+import BasemapToggle from '@arcgis/core/widgets/BasemapToggle';
+import LayerSearchSource from '@arcgis/core/widgets/Search/LayerSearchSource';
+import LocatorSearchSource from '@arcgis/core/widgets/Search/LocatorSearchSource';
 
 @Component({
   selector: 'app-esri-map',
   templateUrl: './esri-map.component.html',
-  styleUrls: ['./esri-map.component.scss']
+  styleUrls: ['./esri-map.component.scss'],
 })
 export class EsriMapComponent implements OnDestroy, AfterViewInit {
   @ViewChild('map')
-  private mapViewEl: ElementRef
-  private view: MapView
-  private search: Search
+  private mapViewEl: ElementRef;
+  private view: MapView;
+  private search: Search;
 
-  mapIsLoaded$ = new Subject<boolean>()
+  mapIsLoaded$ = new Subject<boolean>();
 
   constructor(
     private dialogRef: MatDialogRef<EsriMapComponent>,
@@ -38,106 +37,74 @@ export class EsriMapComponent implements OnDestroy, AfterViewInit {
   ) {}
 
   ngAfterViewInit() {
-    void this.initializeMap()
+    void this.initializeMap();
   }
 
   async initializeMap() {
     try {
-      type Modules = [
-        typeof Map,
-        typeof Graphic,
-        typeof SimpleMarkerSymbol,
-        typeof Color,
-        typeof MapView,
-        typeof Search,
-        typeof BasemapToggle
-      ]
+      const map = new Map({ basemap: 'satellite' });
 
-      const loadedModules = await loadModules<Modules>([
-        'esri/Map',
-        'esri/Graphic',
-        'esri/symbols/SimpleMarkerSymbol',
-        'esri/Color',
-        'esri/views/MapView',
-        'esri/widgets/Search',
-        'esri/widgets/BasemapToggle'
-      ])
-
-      const [
-        MapConstructor,
-        GraphicConstructor,
-        SimpleMarkerSymbolConstructor,
-        ColorConstructor,
-        MapViewConstructor,
-        SearchConstructor,
-        BasemapToggleConstructor
-      ] = loadedModules
-
-      const map = new MapConstructor({ basemap: 'satellite' })
-
-      this.view = new MapViewConstructor({
+      this.view = new MapView({
         container: this.mapViewEl.nativeElement,
         center: [],
         zoom: 10,
-        map
-      })
+        map,
+      });
 
-      this.search = new SearchConstructor({ view: this.view })
-      this.view.ui.add(this.search, 'top-right')
+      this.search = new Search({ view: this.view });
+      this.view.ui.add(this.search, 'top-right');
       this.view.ui.add(
-        new BasemapToggleConstructor({
+        new BasemapToggle({
           view: this.view,
-          nextBasemap: 'streets'
+          nextBasemap: 'streets',
         }),
         'bottom-left'
-      )
+      );
       // this.view.ui.add(this.submitButton.nativeElement, 'bottom-right');
 
       this.view.when(
         async () => {
-          const [latitude, longitude] = this.data.coors
+          const [latitude, longitude] = this.data.coors;
           await this.view.goTo(
             [
               latitude || 47.01266177894471,
-              longitude || 28.825140232956283
+              longitude || 28.825140232956283,
             ].reverse()
-          )
+          );
           if (this.data.address) {
-            await this.search.search(this.data.address)
+            await this.search.search(this.data.address);
           }
-          this.mapIsLoaded$.next(true)
+          this.mapIsLoaded$.next(true);
         },
         (error: any) => {
-          throw new Error(error)
+          throw new Error(error);
         }
-      )
+      );
 
-      const symbol = new SimpleMarkerSymbolConstructor({
+      const symbol = new SimpleMarkerSymbol({
         size: 12,
         style: 'circle',
-        color: new ColorConstructor([207, 34, 171, 0.5]),
+        color: new Color([207, 34, 171, 0.5]),
         outline: {
           style: 'none',
-          color: new ColorConstructor([247, 34, 101, 0.9]),
-          width: 1
-        }
-      })
+          color: new Color([247, 34, 101, 0.9]),
+          width: 1,
+        },
+      });
 
       this.view.on('click', async (evt) => {
-        this.view.graphics.removeAll()
-        this.view.graphics.add(
-          new GraphicConstructor({ geometry: evt.mapPoint, symbol })
-        )
+        this.view.graphics.removeAll();
+        this.view.graphics.add(new Graphic({ geometry: evt.mapPoint, symbol }));
 
-        this.search.clear()
-        this.view.popup.clear()
+        this.search.clear();
+        this.view.popup.clear();
 
         if (isLocatorSearchSource(this.search.activeSource)) {
           const resp = await this.search.activeSource.locator.locationToAddress(
             {
-              location: evt.mapPoint
+              location: evt.mapPoint,
             }
-          )
+          );
 
           // resp.attributes = {
           //   Match_addr: "Strada Constitutiei, 2051, Chisinau"
@@ -162,39 +129,39 @@ export class EsriMapComponent implements OnDestroy, AfterViewInit {
           //   CountryCode: "MDA"
           // }
 
-          const { address = 'No address found.' } = resp
+          const { address = 'No address found.' } = resp;
           this.view.popup.open({
             // title: + Math.round(evt.mapPoint.longitude * 100000) / 100000 + ',' + Math.round(evt.mapPoint.latitude * 100000) / 100000,
             title: address,
-            fetchFeatures: true
+            fetchFeatures: true,
             // content: address,
             // location: evt.mapPoint
-          })
+          });
 
-          this.search.searchTerm = address
+          this.search.searchTerm = address;
           await this.view.goTo(
             [evt.mapPoint.latitude, evt.mapPoint.longitude].reverse()
-          )
+          );
         }
-      })
+      });
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   }
 
   submitCoors() {
-    const { latitude, longitude } = this.view.center
+    const { latitude, longitude } = this.view.center;
     this.dialogRef.close({
       latitude,
       longitude,
-      address: this.search.searchTerm
-    })
+      address: this.search.searchTerm,
+    });
   }
 
   ngOnDestroy() {
     if (this.view) {
       // destroy the map view
-      this.view.destroy()
+      this.view.destroy();
     }
   }
 }
@@ -205,5 +172,5 @@ function isLocatorSearchSource(
   return (
     searchSource.declaredClass === 'esri.tasks.Locator' &&
     !!(searchSource as LocatorSearchSource).locator
-  )
+  );
 }
