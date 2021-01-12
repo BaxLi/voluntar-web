@@ -178,6 +178,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
               );
             }
             this.mapView.graphics.remove(gr);
+            this.cdr.detectChanges();
             console.log('selected arr=', this.selectedRequests);
           }
         });
@@ -207,8 +208,8 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
         attributes: { requestId: req._id },
       })
     );
-    this.cdr.detectChanges();
   }
+
   widgetViewCoordinatesInit(): void {
     // Widget view coordinates
     this.coordsWidget = document.createElement('Coordinates');
@@ -228,22 +229,12 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
 
   citySectorChanged() {
     this.selectedCityZone = this.form.get('city_sector').value;
-    this.selectedRequests = this.selectedRequests.filter((req) => {
-      console.log(
-        '🚀 ~ ~ citySectorChanged ~ selected',
-        this.selectedCityZone,
-        ' reqZone',
-        req.zone
-      );
-      return req.zone === this.selectedCityZone;
-    });
-    console.log(
-      'sector=',
-      this.form.get('city_sector').value,
-      this.selectedRequests
+    this.selectedRequests = this.selectedRequests.filter(
+      (req) => req.zone === this.selectedCityZone
     );
     this.cdr.detectChanges();
   }
+
   onSubmit(ev): void {}
 
   nextFormStep(): void {
