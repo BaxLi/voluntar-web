@@ -44,7 +44,7 @@ export class RequestAddressFieldComponent implements OnInit {
       .subscribe(
         (coors) => {
           if (coors !== undefined) {
-            if (coors.address.length > 1 || coors.address.length == 0)
+            if (coors.address.length > 1 || coors.address.length === 0)
               coors.valid = true;
             else coors.valid = false;
             this.gotCoordinates.emit(coors);
@@ -57,13 +57,13 @@ export class RequestAddressFieldComponent implements OnInit {
 
   selectAddress(ev) {
     this.selectedAddress = ev.target.value;
-    let coors = {
+    const coors = {
       latitude: null,
       longitude: null,
       address: this.selectedAddress,
       valid: false,
     };
-    if (this.selectedAddress.length > 1 || this.selectedAddress.length == 0)
+    if (this.selectedAddress.length > 1 || this.selectedAddress.length === 0)
       coors.valid = true;
     this.gotCoordinates.emit(coors);
   }
