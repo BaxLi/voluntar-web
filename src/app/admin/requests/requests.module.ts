@@ -10,7 +10,7 @@ import { RequestsMapComponent } from './shared/requests-map/requests-map.compone
 import { RouterModule } from '@angular/router';
 import { requestsRoutes } from './requests.routes';
 import { RequestAddressFieldComponent } from './request-details/request-address-field/request-address-field.component';
-import { BeneficiarySelectionComponent } from './shared/requests-map/beneficiary-selection/beneficiary-selection.component';
+import { MapSelectionZoneComponent } from './shared/requests-map/map-selectionzone/map-selectionzone.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +19,7 @@ import { BeneficiarySelectionComponent } from './shared/requests-map/beneficiary
     RequestFormComponent,
     RequestsMapComponent,
     RequestAddressFieldComponent,
-    BeneficiarySelectionComponent,
+    MapSelectionZoneComponent,
   ],
   imports: [
     CommonModule,

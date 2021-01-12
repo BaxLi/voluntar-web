@@ -57,7 +57,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   private coordsWidget: HTMLElement;
   public zones = KIV_ZONES;
   form: FormGroup;
-  stepOnForm = 1;
+  stepOnSelectionZone = 1;
   buttonSelectorTextOnMap = 'Următor';
   volunteers: any = '-+-';
   public selectedRequests: IRequest[] = [];
@@ -65,7 +65,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   private simpleMarkerSymbol = {
     type: 'simple-marker',
     color: [255, 255, 255, 0.3],
-    width: 2,
+    // width: 2,
     style: 'circle', //'circle', 'cross', 'diamond', 'path', 'square', 'triangle', 'x'
     outline: {
       color: [226, 119, 40], // orange
@@ -74,10 +74,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   };
   private changedMarkerSymbol = {
     type: 'simple-marker',
-    color: [60, 210, 120], // green
-    width: 3,
-    // style: 'diamond',
-    // size: 4,
+    color: [60, 210, 120, 0.7], // green
     outline: {
       color: [0, 0, 0, 0.7],
       width: 1,
@@ -92,7 +89,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit(): any {
-    this.stepOnForm = 1;
+    this.stepOnSelectionZone = 1;
     this.form = new FormGroup({
       city_sector: new FormControl(''),
       needs: new FormControl(''),
@@ -101,33 +98,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
     config.assetsPath = '/assets';
     this.initializeMap().then(() => {
       // The map has been initialized
-      //-- TODO -
-      //got requests section - need to reengineer ??? check
-      //volunteers section - need to reengineer to service !
-      // const allVolunteersFromBD = { pageSize: 20000, pageIndex: 1 };
-      // this.volunteersFacade.getVolunteers(allVolunteersFromBD);
-      // this.volunteersFacade.volunteers$.subscribe((vol) => {
-      //   this.volunteers = vol;
-      //   // console.log('VOlunteers=', vol);
-      // });
-    });
-  }
-
-  async initializeMap() {
-    try {
-      this.graphicsLayer = new GraphicsLayer({ title: 'Feature test' });
-      this.map = await new Map({
-        basemap: 'streets-navigation-vector',
-        layers: [this.graphicsLayer],
-      }); //  topo-vector
-
-      this.mapView = new MapView({
-        container: this.mapViewEl.nativeElement,
-        center: this.coordinates,
-        zoom: 12,
-        map: this.map,
-      });
-
+      this.mapView.container = this.mapViewEl.nativeElement;
       from(
         this.requestsService.getRequests({
           pageIndex: 1,
@@ -142,6 +113,23 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
         },
         (err) => console.log('Error getting requests from server! ', err)
       );
+    });
+  }
+
+  async initializeMap() {
+    try {
+      this.graphicsLayer = new GraphicsLayer({ title: 'Feature test' });
+      this.map = await new Map({
+        basemap: 'streets-navigation-vector',
+        layers: [this.graphicsLayer],
+      }); //  topo-vector
+
+      this.mapView = new MapView({
+        // container: this.mapViewEl.nativeElement,
+        center: this.coordinates,
+        zoom: 12,
+        map: this.map,
+      });
 
       this.mapView.on('click', (ev) => {
         this.mapView.hitTest(ev.screenPoint).then((res) => {
@@ -149,37 +137,26 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
             return;
 
           const gr: Graphic = res.results[0].graphic;
-          console.log(
-            'uestsMapComponent ~ this.mapView.hitTest ~ gr',
-            gr.symbol
-          );
-          //TODO - check if possible to upgrade Graphic by simply change symbol on already existent Point()
           if (gr) {
             const exist = this.selectedRequests.find(
               (r) => r._id === gr.attributes.requestId
-            );
-            this.addRequestToMap(
-              {
-                // @ts-expect-error: they exist in Point class
-                latitude: gr.geometry?.latitude || 47.01820503506154,
-                // @ts-expect-error: they exist in Point class
-                longitude: gr.geometry?.longitude || 28.812844986831664,
-                _id: gr.attributes.requestId || 'DUCK',
-              },
-              !exist ? this.changedMarkerSymbol : this.simpleMarkerSymbol
             );
             if (!exist) {
               this.selectedRequests.push(
                 this.requests.find((r) => r._id === gr.attributes.requestId)
               );
+              gr.symbol.set('color', [60, 210, 120, 0.7]);
             } else {
               this.selectedRequests = this.selectedRequests.filter(
                 (r) => r !== exist
               );
+              gr.symbol.set('color', [255, 255, 255, 0.3]);
             }
+            this.mapView.graphics.add(gr.clone());
             this.mapView.graphics.remove(gr);
+            //need to issue detectChanges by Angular for map-selectionzone
+            this.selectedRequests = [...this.selectedRequests];
             this.cdr.detectChanges();
-            console.log('selected arr=', this.selectedRequests);
           }
         });
       });
@@ -189,6 +166,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
       );
 
       this.widgetViewCoordinatesInit();
+      return this.map;
     } catch (error) {
       console.error(error);
     } finally {
@@ -197,17 +175,18 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   }
 
   addRequestToMap(req: coordinates, sym: any): void {
-    // this.mapView.graphics.add(
+    const pointToMap = new Point({
+      latitude: req.latitude || 47.01820503506154,
+      longitude: req.longitude || 28.812844986831664,
+    });
     this.graphicsLayer.add(
       new Graphic({
-        geometry: new Point({
-          latitude: req.latitude || 47.01820503506154,
-          longitude: req.longitude || 28.812844986831664,
-        }),
+        geometry: pointToMap,
         symbol: sym,
         attributes: { requestId: req._id },
       })
     );
+    this.mapView.center = pointToMap;
   }
 
   widgetViewCoordinatesInit(): void {
@@ -221,6 +200,7 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
     this.coordsWidget.style.height = '20px';
     this.mapView.ui.add(this.coordsWidget, 'bottom-right');
   }
+
   showCoordinates(pt): void {
     this.coordsWidget.innerHTML = `Lat/Lon ${pt.latitude} / ${pt.longitude}
       | Scale 1:${Math.round(this.mapView.scale * 1) / 1} | Zoom
@@ -229,8 +209,11 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
 
   citySectorChanged() {
     this.selectedCityZone = this.form.get('city_sector').value;
-    this.selectedRequests = this.selectedRequests.filter(
-      (req) => req.zone === this.selectedCityZone
+    this.mapView.center = new Point(
+      this.zones.find(
+        (zone) =>
+          zone.value.toLowerCase() === this.selectedCityZone.toLowerCase()
+      ).mapCoordonates
     );
     this.cdr.detectChanges();
   }
@@ -239,8 +222,10 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
 
   nextFormStep(): void {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    this.stepOnForm === 3 ? (this.stepOnForm = 1) : this.stepOnForm++;
-    switch (this.stepOnForm) {
+    this.stepOnSelectionZone === 3
+      ? (this.stepOnSelectionZone = 1)
+      : this.stepOnSelectionZone++;
+    switch (this.stepOnSelectionZone) {
       case 1:
         this.buttonSelectorTextOnMap = 'Următor';
         break;
