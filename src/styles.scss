@@ -1,9 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
-@import './styles/main';
-@import './styles/colors';
-@import './styles/buttons';
-@import './styles/badges';
-@import './styles/form';
+@import "./styles/main";
+@import "./styles/colors";
+@import "./styles/buttons";
+@import "./styles/badges";
+@import "./styles/form";
 
 html,
 body {
@@ -13,7 +13,7 @@ body {
 body {
   margin: 0;
   overflow-y: scroll;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
   background-color: #eeeeee;
 }
 
@@ -67,7 +67,7 @@ body {
   text-decoration: none !important;
 }
 
-.esri-map mat-dialog-container {
+.cdk-overlay-pane-no-padding mat-dialog-container {
   padding: 0;
 }
 

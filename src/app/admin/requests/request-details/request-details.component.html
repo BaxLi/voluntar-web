@@ -120,7 +120,7 @@
       <div class="field" fxFlex fxLayout="column">
         <div class="title">Adresă</div>
         <app-request-address-field
-          (gotCoordinates)="updateAdress($event)"
+          (gotCoordinates)="updateAddress($event)"
         ></app-request-address-field>
         <mat-error *ngIf="form.get('address').invalid && form.touched">
           atenție, eroare - cîmp obligatoriu!
@@ -162,19 +162,14 @@
             placeholder="Alege"
           >
             <mat-option [value]="'None'">
-              <mat-icon></mat-icon>Nu are
+              <mat-icon></mat-icon>
+              Nu are
             </mat-option>
             <mat-option
               *ngFor="let item of specialConditions"
               [value]="item.value"
             >
-              <img
-                src="/assets/icons/beneficiary/beneficiary_special_conditions/{{
-                  [item.value]
-                }}.svg"
-                width="24"
-                height="24"
-              />
+              <mat-icon [svgIcon]="item.value"></mat-icon>
               {{ item.label }}
             </mat-option>
           </mat-select>
@@ -204,13 +199,7 @@
               *ngFor="let need of needs | keyvalue: enumUnsorted"
               [value]="need.key"
             >
-              <img
-                src="/assets/icons/beneficiary/beneficiary_needs/{{
-                  [need.key]
-                }}.svg"
-                width="24"
-                height="24"
-              />
+              <mat-icon [svgIcon]="need.key"></mat-icon>
               {{ need.value }}
             </mat-option>
           </mat-select>
@@ -229,14 +218,11 @@
             placeholder="Alege"
           >
             <mat-option [value]="false">
-              <mat-icon></mat-icon>Nu are
+              <mat-icon></mat-icon>
+              Nu are
             </mat-option>
             <mat-option [value]="true">
-              <img
-                src="/assets/icons/beneficiary/mask.svg"
-                width="24"
-                height="24"
-              />
+              <mat-icon [svgIcon]="'mask'"></mat-icon>
               Are simptome
             </mat-option>
           </mat-select>
@@ -274,9 +260,7 @@
 
       <div class="field" fxFlex fxLayout="column">
         <div class="slide-toggle" [ngStyle]="getUrgentStyleObject()">
-          <mat-slide-toggle formControlName="urgent">
-            Urgent?
-          </mat-slide-toggle>
+          <mat-slide-toggle formControlName="urgent">Urgent?</mat-slide-toggle>
         </div>
       </div>
     </div>

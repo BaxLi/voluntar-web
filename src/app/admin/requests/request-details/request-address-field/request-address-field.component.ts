@@ -33,7 +33,7 @@ export class RequestAddressFieldComponent implements OnInit {
           coors: [47.02486150651041, 28.832740004203416],
           address: 'Arcul de Triumf',
         },
-        panelClass: 'esri-map',
+        panelClass: 'cdk-overlay-pane-no-padding',
         width: '80%',
         height: '80%',
         maxWidth: '100%',
@@ -41,26 +41,29 @@ export class RequestAddressFieldComponent implements OnInit {
       })
       .afterClosed()
       .pipe(first())
-      .subscribe((coors) => {
-        if (coors) {
-          if (coors.address.length > 1 || coors.address.length === 0)
-            coors.valid = true;
-          else coors.valid = false;
-          this.gotCoordinates.emit(coors);
-          this.selectedAddress = coors.address || '';
-        }
-      });
+      .subscribe(
+        (coors) => {
+          if (coors !== undefined) {
+            if (coors.address.length > 1 || coors.address.length == 0)
+              coors.valid = true;
+            else coors.valid = false;
+            this.gotCoordinates.emit(coors);
+            this.selectedAddress = coors.address || '';
+          }
+        },
+        (err) => console.log('Coordonates missed!', err)
+      );
   }
 
   selectAddress(ev) {
     this.selectedAddress = ev.target.value;
-    const coors = {
+    let coors = {
       latitude: null,
       longitude: null,
       address: this.selectedAddress,
       valid: false,
     };
-    if (this.selectedAddress.length > 1 || this.selectedAddress.length === 0)
+    if (this.selectedAddress.length > 1 || this.selectedAddress.length == 0)
       coors.valid = true;
     this.gotCoordinates.emit(coors);
   }

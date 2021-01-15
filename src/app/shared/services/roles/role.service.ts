@@ -1,28 +1,41 @@
 import { Injectable } from '@angular/core';
+import { UserRole } from '@users/shared/user-role';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RoleService {
   static ACCESS_CONFIG = {
-    users: {
-      roles: ['admin'],
-    },
-    requests: {
-      roles: ['admin', 'operator', 'fixer'],
-    },
-    beneficiaries: {
-      roles: ['admin', 'fixer'],
-    },
-    volunteers: {
-      roles: ['admin', 'fixer'],
-    },
+    users: [
+      UserRole.administrator,
+      // TODO: to remove these are deprecated
+      UserRole.admin,
+    ],
+    requests: [
+      UserRole.administrator,
+      UserRole.operator,
+      UserRole.coordinator,
+      // TODO: to remove these are deprecated
+      UserRole.fixer,
+      UserRole.admin,
+    ],
+    beneficiaries: [
+      UserRole.administrator,
+      UserRole.coordinator,
+      // TODO: to remove these are deprecated
+      UserRole.admin,
+    ],
+    volunteers: [
+      UserRole.administrator,
+      UserRole.coordinator,
+      // TODO: to remove these are deprecated
+      UserRole.admin,
+    ],
   };
-  constructor() {}
 
-  static GET_FROM_CONFIG(
+  static getPageRoles(
     item: keyof typeof RoleService.ACCESS_CONFIG
-  ): { roles: string[] } {
+  ): UserRole[] {
     return RoleService.ACCESS_CONFIG[item];
   }
 }

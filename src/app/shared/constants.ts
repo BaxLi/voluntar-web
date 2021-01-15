@@ -1,39 +1,46 @@
 export const KIV_ZONES = [
   {
     label: 'Centru',
-    value: 'centru'
+    value: 'centru',
   },
   {
     label: 'Botanica',
-    value: 'botanica'
+    value: 'botanica',
   },
   {
     label: 'Buiucani',
-    value: 'buiucani'
+    value: 'buiucani',
   },
   {
     label: 'Ciocana',
-    value: 'ciocana'
+    value: 'ciocana',
   },
   {
     label: 'Rîșcani',
-    value: 'riscani'
-  }
-]
+    value: 'riscani',
+  },
+  {
+    label: 'Suburbii',
+    value: 'suburbii',
+  },
+];
 
 export const KIV_ZONES_MAP = KIV_ZONES.reduce((acc, zone) => {
-  acc[zone.value] = zone.label
-  return acc
-}, {})
+  acc[zone.value] = zone.label;
+  return acc;
+}, {});
 
 export enum VOLUNTEER_STATUS {}
 
+export enum VOLUNTEER_STATUS {}
+
+// TODO: rename to VolunteerRole
 export enum VOLUNTEER_ROLES {
   delivery = 'Livrare',
   copilot = 'Copilot',
   packing = 'Împachetare',
   supply = 'Aprovizionare',
-  operator = 'Operator'
+  operator = 'Operator',
 }
 
 export enum VOLUNTEER_ROLES_ICONS {
@@ -41,7 +48,7 @@ export enum VOLUNTEER_ROLES_ICONS {
   copilot = 'copilot',
   packing = 'impachetare',
   supply = 'aprovizionare',
-  operator = 'operator'
+  operator = 'operator',
 }
 
 export enum ZONES {
@@ -51,7 +58,7 @@ export enum ZONES {
   ciocana = 'ciocana',
   riscani = 'riscani',
   telecentru = 'telecentru',
-  suburbii = 'suburbii'
+  suburbii = 'suburbii',
 }
 
 export enum DAYS_OF_WEEK {
@@ -61,25 +68,40 @@ export enum DAYS_OF_WEEK {
   thursday = 'Joi',
   friday = 'Vineri',
   saturday = 'Sambata',
-  sunday = 'Duminica'
+  sunday = 'Duminica',
 }
+
+export const volunteerRoles = Object.values(VOLUNTEER_ROLES);
+
+// TODO: rename to Zone
+export enum ZONES {
+  botanica = 'botanica',
+  buiucani = 'buiucani',
+  centru = 'centru',
+  ciocana = 'ciocana',
+  riscani = 'riscani',
+  telecentru = 'telecentru',
+  suburbii = 'suburbii',
+}
+
+export const zones = Object.values(ZONES);
 
 export const SPECIAL_CONDITIONS = [
   {
     label: 'Disability',
-    value: 'disability'
+    value: 'disability',
   },
   {
     label: 'Deaf-mute',
-    value: 'deaf_mute'
+    value: 'deafmute',
   },
   {
     label: 'Blind/Weak-seer',
-    value: 'blind_weak_seer'
-  }
-]
+    value: 'blind_weak_seer',
+  },
+];
 
 export const SPECIAL_CONDITIONS_MAP = SPECIAL_CONDITIONS.reduce((acc, item) => {
-  acc[item.value] = item.label
-  return acc
-}, {})
+  acc[item.value] = item.label;
+  return acc;
+}, {});

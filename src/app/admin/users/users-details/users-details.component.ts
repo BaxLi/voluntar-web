@@ -13,11 +13,12 @@ import { map, takeUntil, tap, filter } from 'rxjs/operators';
 import { UsersFacade } from '../users.facade';
 import { Subject } from 'rxjs';
 import { ErrorStateMatcher } from '@angular/material/core';
+import { userRoles } from '@users/shared/user-role';
 
 @Component({
-  templateUrl: './user-details.component.html',
+  templateUrl: './users-details.component.html',
 })
-export class UserDetailsComponent implements OnInit, OnDestroy {
+export class UsersDetailsComponent implements OnInit, OnDestroy {
   componentDestroyed$ = new Subject();
   isLoading$ = this.usersFacade.isLoading$;
   id: string;
@@ -40,7 +41,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       validators: this.passwordMatch,
     }
   );
-  availableRoles = ['admin', 'fixer', 'operator'];
+  availableRoles = userRoles;
   matcher = new MyErrorStateMatcher();
   constructor(
     private fb: FormBuilder,

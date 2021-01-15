@@ -9,14 +9,9 @@ export const adminRoutes: Routes = [
     component: AdminComponent,
     children: [
       {
-        path: '',
-        redirectTo: 'requests',
-        pathMatch: 'full',
-      },
-      {
         path: 'beneficiaries',
         data: {
-          ...RoleService.GET_FROM_CONFIG('beneficiaries'),
+          roles: RoleService.getPageRoles('beneficiaries'),
         },
         canActivate: [RolesGuard],
         loadChildren: () =>
@@ -27,7 +22,7 @@ export const adminRoutes: Routes = [
       {
         path: 'volunteers',
         data: {
-          ...RoleService.GET_FROM_CONFIG('volunteers'),
+          roles: RoleService.getPageRoles('volunteers'),
         },
         canActivate: [RolesGuard],
         loadChildren: () =>
@@ -38,7 +33,7 @@ export const adminRoutes: Routes = [
       {
         path: 'requests',
         data: {
-          ...RoleService.GET_FROM_CONFIG('requests'),
+          roles: RoleService.getPageRoles('requests'),
         },
         canActivate: [RolesGuard],
         loadChildren: () =>
@@ -47,17 +42,17 @@ export const adminRoutes: Routes = [
       {
         path: 'users',
         data: {
-          ...RoleService.GET_FROM_CONFIG('users'),
+          roles: RoleService.getPageRoles('users'),
         },
         canActivate: [RolesGuard],
         loadChildren: () =>
           import('./users/users.module').then((m) => m.UsersModule),
       },
-      // {
-      //   path: '**',
-      //   redirectTo: 'volunteers',
-      //   pathMatch: 'full'
-      // }
+      {
+        path: '**',
+        redirectTo: 'requests',
+        pathMatch: 'full',
+      },
     ],
   },
 ];

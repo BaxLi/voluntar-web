@@ -1,9 +1,6 @@
-export interface AuthCredentials {
-  login: string;
-  password: string;
-}
+import { UserRole } from './user-role';
 
-export interface IUser {
+export interface User {
   _id?: string;
   created_at?: string;
   created_by: string;
@@ -13,5 +10,5 @@ export interface IUser {
   last_access: string;
   last_name: string;
   phone: number;
-  role: string[];
+  role: UserRole[];
 }
