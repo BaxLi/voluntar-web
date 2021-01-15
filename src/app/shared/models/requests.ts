@@ -5,6 +5,7 @@ export type RequestStatus =
   | 'canceled'
   | 'solved'
   | 'archived';
+
 export type RequestType = 'warm_lunch' | 'grocery' | 'medicine';
 export enum RequestTypeUpdated {
   warm_lunch = 'Prânz Cald',

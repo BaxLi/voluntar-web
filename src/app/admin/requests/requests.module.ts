@@ -6,18 +6,18 @@ import { MaterialComponentsModule } from '@shared/material.module';
 import { SharedModule } from '@shared/shared.module';
 import { RequestFormComponent } from './shared/request-form/request-form.component';
 import { NgxMaskModule } from 'ngx-mask';
-import { RequestsMapComponent } from './shared/requests-map/requests-map.component';
+import { DemandsMapComponent } from './shared/demands-map/demands-map.component';
 import { RouterModule } from '@angular/router';
 import { requestsRoutes } from './requests.routes';
 import { RequestAddressFieldComponent } from './request-details/request-address-field/request-address-field.component';
-import { MapSelectionZoneComponent } from './shared/requests-map/map-selectionzone/map-selectionzone.component';
+import { MapSelectionZoneComponent } from './shared/demands-map/map-selectionzone/map-selectionzone.component';
 
 @NgModule({
   declarations: [
     RequestDetailsComponent,
     RequestsListComponent,
     RequestFormComponent,
-    RequestsMapComponent,
+    DemandsMapComponent,
     RequestAddressFieldComponent,
     MapSelectionZoneComponent,
   ],

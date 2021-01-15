@@ -28,6 +28,7 @@ import { VolunteersFacade } from '@app/admin/volunteers/volunteers.facade';
 import { IRequest } from '@app/shared/models';
 import { KIV_ZONES } from '@app/shared/constants';
 import { RequestsService } from '../../requests.service';
+import { Demand, DemandType } from '@app/shared/models/demand';
 
 export interface coordinates {
   latitude: number;
@@ -36,11 +37,11 @@ export interface coordinates {
 }
 
 @Component({
-  selector: 'app-requests-map',
-  templateUrl: './requests-map.component.html',
-  styleUrls: ['./requests-map.component.scss'],
+  selector: 'app-demands-map',
+  templateUrl: './demands-map.component.html',
+  styleUrls: ['./demands-map.component.scss'],
 })
-export class RequestsMapComponent implements OnDestroy, OnInit {
+export class DemandsMapComponent implements OnDestroy, OnInit {
   @Input() coordinates: [number, number] = [
     28.825140232956283,
     47.01266177894471,
@@ -48,6 +49,8 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   @Output() mapLoadedEvent = new EventEmitter<boolean>();
   @Output() mapClickedEvent = new EventEmitter<boolean>();
   @ViewChild('map', { static: true }) private mapViewEl: ElementRef;
+  @ViewChild('headerSelectionZone', { static: true })
+  private headerSelection: ElementRef;
 
   private map: Map = null;
   private mapView: MapView = null;
@@ -56,16 +59,17 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
   private subRequests$: Subscription;
   private coordsWidget: HTMLElement;
   public zones = KIV_ZONES;
+  public demand: DemandType;
+  demands = Object.entries(DemandType).map(([key, value]) => key);
   form: FormGroup;
   stepOnSelectionZone = 1;
   buttonSelectorTextOnMap = 'Următor';
   volunteers: any = '-+-';
-  public selectedRequests: IRequest[] = [];
+  public selectedRequests: Demand[] = [];
   public selectedCityZone = '';
   private simpleMarkerSymbol = {
     type: 'simple-marker',
     color: [255, 255, 255, 0.3],
-    // width: 2,
     style: 'circle', //'circle', 'cross', 'diamond', 'path', 'square', 'triangle', 'x'
     outline: {
       color: [226, 119, 40], // orange
@@ -97,28 +101,16 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
     // Initialize MapView
     config.assetsPath = '/assets';
     this.initializeMap().then(() => {
-      // The map has been initialized
-      this.mapView.container = this.mapViewEl.nativeElement;
-      from(
-        this.requestsService.getRequests({
-          pageIndex: 1,
-          pageSize: 20000,
-        })
-      ).subscribe(
-        (res) => {
-          this.requests = res.list;
-          this.requests.forEach((el) => {
-            this.addRequestToMap(el, this.simpleMarkerSymbol);
-          });
-        },
-        (err) => console.log('Error getting requests from server! ', err)
-      );
+      // The map has been initialized and prefilled
     });
   }
 
   async initializeMap() {
     try {
-      this.graphicsLayer = new GraphicsLayer({ title: 'Feature test' });
+      //Geographic data stored temporarily in memory.
+      //Displaying individual geographic features as graphics, visual aids or text on the map.
+      this.graphicsLayer = new GraphicsLayer();
+
       this.map = await new Map({
         basemap: 'streets-navigation-vector',
         layers: [this.graphicsLayer],
@@ -127,21 +119,31 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
       this.mapView = new MapView({
         // container: this.mapViewEl.nativeElement,
         center: this.coordinates,
+        container: this.mapViewEl.nativeElement,
         zoom: 12,
         map: this.map,
       });
+      this.initializeRequestsOnTheMap('init');
+      this.mapView.popup.autoOpenEnabled = false; // Disable the default popup behavior
 
       this.mapView.on('click', (ev) => {
         this.mapView.hitTest(ev.screenPoint).then((res) => {
           if (res.results[0].graphic.attributes?.requestId === undefined)
             return;
 
+          this.mapView.popup.open({
+            // open a popup to show some of the results
+            location: ev.screenPoint,
+            title: 'Hit Test Results',
+            content: 'Features Found',
+          });
+
           const gr: Graphic = res.results[0].graphic;
           if (gr) {
             const exist = this.selectedRequests.find(
               (r) => r._id === gr.attributes.requestId
             );
-            if (!exist) {
+            if (exist === undefined) {
               this.selectedRequests.push(
                 this.requests.find((r) => r._id === gr.attributes.requestId)
               );
@@ -166,7 +168,6 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
       );
 
       this.widgetViewCoordinatesInit();
-      return this.map;
     } catch (error) {
       console.error(error);
     } finally {
@@ -174,16 +175,77 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
     }
   }
 
-  addRequestToMap(req: coordinates, sym: any): void {
+  initializeRequestsOnTheMap(
+    status: 'init' | 'filter',
+    filters: any = {}
+  ): void {
+    this.mapView.graphics.removeAll();
+    if (status === 'init') {
+      this.selectedRequests = [];
+    } else {
+      this.selectedRequests.forEach((el) =>
+        this.addRequestToMap(el, this.changedMarkerSymbol)
+      );
+    }
+    from(
+      this.requestsService.getDemand(
+        {
+          pageIndex: 1,
+          pageSize: 20000,
+        },
+        {
+          status: 'confirmed',
+          ...filters,
+        }
+      )
+    ).subscribe(
+      (res) => {
+        console.log('DB return demands from DB = ', res.list);
+        this.requests = res.list;
+        this.requests.forEach((el) =>
+          this.addRequestToMap(el, this.simpleMarkerSymbol)
+        );
+      },
+      (err) => console.log('Error getting requests from server! ', err)
+    );
+  }
+  //TODO - provide right types especially IRequest
+  addRequestToMap(req: any, sym: any): void {
     const pointToMap = new Point({
-      latitude: req.latitude || 47.01820503506154,
-      longitude: req.longitude || 28.812844986831664,
+      latitude:
+        req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,
+      longitude:
+        req.beneficiary.longitude || 28.812844986831664 + Math.random() * 0.01,
     });
-    this.graphicsLayer.add(
+    this.mapView.graphics.add(
       new Graphic({
         geometry: pointToMap,
         symbol: sym,
-        attributes: { requestId: req._id },
+        attributes: {
+          requestId: req._id,
+          zone: req.beneficiary.zone || 'centru',
+        },
+        popupTemplate: {
+          // autocasts as new PopupTemplate()
+          title: 'Places in Chisinau',
+          content: [
+            {
+              type: 'fields',
+              fieldInfos: [
+                {
+                  fieldName: 'name',
+                  label: 'Name',
+                  visible: true,
+                },
+                {
+                  fieldName: 'address',
+                  label: 'Address',
+                  visible: true,
+                },
+              ],
+            },
+          ],
+        },
       })
     );
     this.mapView.center = pointToMap;
@@ -207,33 +269,49 @@ export class RequestsMapComponent implements OnDestroy, OnInit {
       ${this.mapView.zoom}`;
   }
 
-  citySectorChanged() {
-    this.selectedCityZone = this.form.get('city_sector').value;
-    this.mapView.center = new Point(
-      this.zones.find(
-        (zone) =>
-          zone.value.toLowerCase() === this.selectedCityZone.toLowerCase()
-      ).mapCoordonates
+  citySectorChanged(): void {
+    this.selectedCityZone = `${this.form.get('city_sector').value}`;
+    console.log('🚀 ~ file:  this.selectedCityZone', this.selectedCityZone);
+    const selectedZone = this.zones.find(
+      (zone) => zone.value.toLowerCase() === this.selectedCityZone.toLowerCase()
     );
+    this.mapView.center = new Point(selectedZone.mapCoordonates);
+
+    if ('toate'.normalize() !== this.selectedCityZone.normalize())
+      this.initializeRequestsOnTheMap('filter', { zone: selectedZone.value });
+    else this.initializeRequestsOnTheMap('filter');
+
     this.cdr.detectChanges();
   }
 
-  onSubmit(ev): void {}
+  necesityChanged(): void {
+    this.cdr.detectChanges();
+  }
+
+  onSubmit(ev): void {
+    ev.preventDefault();
+  }
 
   nextFormStep(): void {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    this.stepOnSelectionZone === 3
-      ? (this.stepOnSelectionZone = 1)
-      : this.stepOnSelectionZone++;
+    if (this.stepOnSelectionZone === 3) {
+      this.stepOnSelectionZone = 1;
+      this.initializeRequestsOnTheMap('init');
+    } else {
+      this.stepOnSelectionZone++;
+    }
     switch (this.stepOnSelectionZone) {
       case 1:
         this.buttonSelectorTextOnMap = 'Următor';
+        this.headerSelection.nativeElement.innerHTML = 'Selectare Beneficiari';
         break;
       case 2:
         this.buttonSelectorTextOnMap = 'Alocă';
+        this.headerSelection.nativeElement.innerHTML = 'Selectare Voluntari';
         break;
       case 3:
         this.buttonSelectorTextOnMap = 'Sarcină Nouă';
+        this.headerSelection.nativeElement.innerHTML = 'FINISH!';
         break;
       default:
         this.buttonSelectorTextOnMap = 'ERROR !!!';

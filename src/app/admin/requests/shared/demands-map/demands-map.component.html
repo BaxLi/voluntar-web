@@ -8,7 +8,11 @@
     <div id="selection_div">
       <form [formGroup]="form" (ngSubmit)="onSubmit($event)">
         <div fxLayout="column">
-          <div class="selectBeneficiary" fxLayoutAlign="center center">
+          <div
+            #headerSelectionZone
+            class="selectBeneficiary"
+            fxLayoutAlign="center center"
+          >
             Selectare Beneficiari
           </div>
           <div
@@ -29,11 +33,14 @@
               </mat-select>
             </div>
             <div fxFlex="45" style="background-color: rgb(51, 185, 141)">
-              <mat-select formControlName="needs" placeholder="Necesitateф">
-                <mat-option>1</mat-option>
-                <mat-option>2</mat-option>
-                <mat-option>3</mat-option>
-                <mat-option>4</mat-option>
+              <mat-select
+                formControlName="needs"
+                placeholder="Necesitate"
+                (selectionChange)="necesityChanged()"
+              >
+                <mat-option *ngFor="let nec of demands" [value]="nec">
+                  {{ nec }}
+                </mat-option>
               </mat-select>
             </div>
           </div>

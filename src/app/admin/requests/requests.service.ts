@@ -25,6 +25,22 @@ export class RequestsService {
     );
   }
 
+  getDemand(
+    page: { pageIndex: number; pageSize: number } = {
+      pageIndex: 1,
+      pageSize: 20,
+    },
+    filters: any = {}
+  ) {
+    const params = new HttpParams({ fromObject: filters });
+    return this.http.get<{ count: number; list: IRequestDetails[] }>(
+      `${environment.url}/requests/filters/${page.pageIndex || 1}/${
+        page.pageSize || 1000
+      }`,
+      { params }
+    );
+  }
+
   getRequstById(id: string) {
     return this.http.get<IRequestDetails>(
       `${environment.url}/beneficiary?id=${id}`
