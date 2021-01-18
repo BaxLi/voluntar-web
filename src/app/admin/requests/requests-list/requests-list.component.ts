@@ -34,7 +34,7 @@ import { KIV_ZONES } from '@shared/constants';
 @Component({
   templateUrl: './requests-list.component.html',
   styleUrls: ['./requests-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequestsListComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;

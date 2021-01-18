@@ -26,5 +26,6 @@ import { RequestAddressFieldComponent } from './request-details/request-address-
     SharedModule,
     NgxMaskModule.forChild(),
   ],
+  exports: [],
 })
 export class RequestsModule {}

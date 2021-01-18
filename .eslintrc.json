@@ -41,6 +41,7 @@
         "linebreak-style": "off",
         "new-parens": "off",
         "newline-per-chained-call": "off",
+        "@typescript-eslint/semi": ["off"],
         "no-extra-semi": "off",
         "no-irregular-whitespace": "off",
         "no-trailing-spaces": "off",

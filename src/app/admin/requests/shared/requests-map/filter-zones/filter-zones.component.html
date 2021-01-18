@@ -1,0 +1,29 @@
+<!-- <div fxFlex="auto" fxFill fxLayout="column" fxLayoutAlign="space-between stretch"> -->
+<!-- <div fxLayout="column" fxLayoutAlign="center stretch">
+  <cdk-virtual-scroll-viewport itemSize="50" class="selectionMapSection"> -->
+<div *ngFor="let req of selectedRequests">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <img
+          src="/assets/icons/requests/mapSelectionDot.png"
+          width="16"
+          height="16"
+        />
+        {{ req.first_name }}
+      </mat-card-title>
+      <mat-card-subtitle>
+        <mat-icon style="font-size: 16px">place</mat-icon>
+        {{ req.zone_address }} {{ req.address }}
+      </mat-card-subtitle>
+      <mat-card-subtitle>
+        <mat-icon style="font-size: 16px">mail</mat-icon>
+        {{ req.type || 'nedeterminat' }}
+      </mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+</div>
+
+<!-- </cdk-virtual-scroll-viewport>
+</div> -->
+<!-- </div> -->

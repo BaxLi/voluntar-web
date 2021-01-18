@@ -1,37 +1,37 @@
-import { Component } from '@angular/core';
-import { AuthFacade } from '@auth/auth.facade';
-import { map } from 'rxjs/operators';
-import { RequestsFacade } from '@requests/requests.facade';
+import { Component } from '@angular/core'
+import { AuthFacade } from '@auth/auth.facade'
+import { map } from 'rxjs/operators'
+import { RequestsFacade } from '@requests/requests.facade'
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss'],
+  styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
-  newRequest$ = this.requestsFacade.newRequests;
+  newRequest$ = this.requestsFacade.newRequests
   userName$ = this.userFacade.userData$.pipe(
     map((user) => (user ? user.first_name : 'User Name'))
-  );
+  )
 
   links = [
     {
       label: 'Requests',
-      link: './requests',
+      link: './requests'
     },
     {
       label: 'Beneficiaries',
-      link: './beneficiaries',
+      link: './beneficiaries'
     },
     {
       label: 'Volunteers',
-      link: './volunteers',
+      link: './volunteers'
     },
     {
       label: 'Users',
-      link: './users',
-    },
-  ];
+      link: './users'
+    }
+  ]
 
   constructor(
     private userFacade: AuthFacade,
@@ -39,11 +39,11 @@ export class HeaderComponent {
   ) {}
 
   onLogout() {
-    this.userFacade.logout();
+    this.userFacade.logout()
   }
 
   fetchRequests() {
-    this.requestsFacade.getRequests({ pageSize: 20, pageIndex: 1 });
-    this.requestsFacade.resetNewRequests();
+    this.requestsFacade.getRequests({ pageSize: 20, pageIndex: 1 })
+    this.requestsFacade.resetNewRequests()
   }
 }

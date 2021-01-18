@@ -134,6 +134,14 @@ export class VolunteersListComponent implements OnInit {
     ];
   }
 
+  onVolunteersImport(): void {
+    //TODO
+  }
+
+  onVolunteersExport(): void {
+    //TODO
+  }
+
   // TODO
   onVolunteersImport(): void {}
 

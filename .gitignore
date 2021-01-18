@@ -30,6 +30,7 @@ speed-measure-plugin*.json
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
+.vscode
 
 # misc
 /.sass-cache
@@ -46,3 +47,4 @@ testem.log
 Thumbs.db
 
 /src/_redirects
+test_login.txt

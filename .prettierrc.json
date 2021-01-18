@@ -1,5 +1,4 @@
 {
-  "htmlWhitespaceSensitivity": "ignore",
   "overrides": [
     {
       "files": ["*.css", "*.scss"],
