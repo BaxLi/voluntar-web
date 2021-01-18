@@ -4,13 +4,12 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  // NgZone,
   OnDestroy,
   OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { from, Subscription } from 'rxjs';
 import Map from '@arcgis/core/Map';
 import Graphic from '@arcgis/core/Graphic';
@@ -19,16 +18,13 @@ import MapView from '@arcgis/core/views/MapView';
 
 // import Search from '@arcgis/core/widgets/Search';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
-import Expand from '@arcgis/core/widgets/Expand';
-import Bookmarks from '@arcgis/core/widgets/Bookmarks';
 import config from '@arcgis/core/config.js';
 
 import { RequestsFacade } from '../../requests.facade';
-import { VolunteersFacade } from '@app/admin/volunteers/volunteers.facade';
-import { IRequest } from '@app/shared/models';
 import { KIV_ZONES } from '@app/shared/constants';
 import { RequestsService } from '../../requests.service';
 import { Demand, DemandType } from '@app/shared/models/demand';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 
 export interface coordinates {
   latitude: number;
@@ -64,7 +60,8 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
   form: FormGroup;
   stepOnSelectionZone = 1;
   buttonSelectorTextOnMap = 'Următor';
-  volunteers: any = '-+-';
+  public dateDemandRequested: Date = null;
+
   public selectedRequests: Demand[] = [];
   public selectedCityZone = '';
   private simpleMarkerSymbol = {
@@ -87,21 +84,35 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
 
   constructor(
     public requestsFacade: RequestsFacade,
-    public volunteersFacade: VolunteersFacade,
     public requestsService: RequestsService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  OnDateChange(event: MatDatepickerInputEvent<Date>) {
+    console.log(`event: ${event.value}`);
+  }
 
   ngOnInit(): any {
     this.stepOnSelectionZone = 1;
     this.form = new FormGroup({
       city_sector: new FormControl(''),
       needs: new FormControl(''),
+      volunteerAvailabilityDate: new FormControl('', Validators.required),
     });
     // Initialize MapView
     config.assetsPath = '/assets';
     this.initializeMap().then(() => {
       // The map has been initialized and prefilled
+      // this.mapView.goTo(
+      //   new Point({
+      //     latitude: 47.01820503506154 + Math.random() * 0.01,
+      //     longitude: 28.812844986831664 + Math.random() * 0.01,
+      //   })
+      // );
+      // this.mapView.center = new Point({
+      //   latitude: 47.01820503506154 + Math.random() * 0.01,
+      //   longitude: 28.812844986831664 + Math.random() * 0.01,
+      // });
     });
   }
 
@@ -156,16 +167,20 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
             }
             this.mapView.graphics.add(gr.clone());
             this.mapView.graphics.remove(gr);
-            //need to issue detectChanges by Angular for map-selectionzone
+            //need to issue detectChanges by Angular
             this.selectedRequests = [...this.selectedRequests];
             this.cdr.detectChanges();
           }
         });
+        this.cdr.detectChanges();
       });
 
       this.mapView.on('pointer-move', (ev) =>
         this.showCoordinates(this.mapView.toMap({ x: ev.x, y: ev.y }))
       );
+      this.mapView.on('load', (ev) => {
+        console.log('loaded');
+      });
 
       this.widgetViewCoordinatesInit();
     } catch (error) {
@@ -179,10 +194,10 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     status: 'init' | 'filter',
     filters: any = {}
   ): void {
-    this.mapView.graphics.removeAll();
     if (status === 'init') {
       this.selectedRequests = [];
     } else {
+      this.mapView.graphics.removeAll();
       this.selectedRequests.forEach((el) =>
         this.addRequestToMap(el, this.changedMarkerSymbol)
       );
@@ -210,7 +225,7 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     );
   }
   //TODO - provide right types especially IRequest
-  addRequestToMap(req: any, sym: any): void {
+  addRequestToMap(req: Demand, sym: any): void {
     const pointToMap = new Point({
       latitude:
         req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,

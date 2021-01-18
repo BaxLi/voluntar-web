@@ -10,7 +10,8 @@ import { DemandsMapComponent } from './shared/demands-map/demands-map.component'
 import { RouterModule } from '@angular/router';
 import { requestsRoutes } from './requests.routes';
 import { RequestAddressFieldComponent } from './request-details/request-address-field/request-address-field.component';
-import { MapSelectionZoneComponent } from './shared/demands-map/map-selectionzone/map-selectionzone.component';
+import { VolunteerSelectionOnMapComponent } from './shared/demands-map/volunteer-selection/volunteer-selection.component';
+import { DemandSelectionOnMapComponent } from './shared/demands-map/demand-selection/demand-selection.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { MapSelectionZoneComponent } from './shared/demands-map/map-selectionzon
     RequestFormComponent,
     DemandsMapComponent,
     RequestAddressFieldComponent,
-    MapSelectionZoneComponent,
+    DemandSelectionOnMapComponent,
+    VolunteerSelectionOnMapComponent,
   ],
   imports: [
     CommonModule,
