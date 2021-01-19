@@ -1,11 +1,26 @@
 <!-- --------STEP 2------------------- -->
-<cdk-virtual-scroll-viewport itemSize="50" class="cdk-viewport">
-  <div *cdkVirtualFor="let vol of volunteers">
+<div style="background-color: rgb(44, 153, 117)">
+  <mat-form-field class="example-full-width" appearance="fill">
+    <mat-label>Choose a date</mat-label>
+    <input
+      matInput
+      [matDatepicker]="picker"
+      placeholder="Choose a date"
+      (dateInput)="OnDateChange($event)"
+    />
+    <mat-datepicker-toggle matSuffix [for]="picker">
+      <mat-icon matDatepickerToggleIcon>keyboard_arrow_down</mat-icon>
+    </mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+</div>
+<cdk-virtual-scroll-viewport #virtualScroll itemSize="50" class="cdk-viewport">
+  <div
+    *cdkVirtualFor="let vol of volunteers"
+    (click)="volunteerClicked(vol._id)"
+  >
     <div *ngIf="checkIfVolunteerAvailable(vol.availability_days)">
-      <mat-card
-        style="width: 100%; height: auto; padding: 9px 11px"
-        (onclick)="volunteerClicked(vol._id)"
-      >
+      <mat-card style="width: 100%; height: auto; padding: 9px 11px">
         <mat-card-header style="border: 1px solid rgb(131, 63, 63)">
           <mat-card-title>
             <img

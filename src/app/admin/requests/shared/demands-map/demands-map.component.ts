@@ -9,14 +9,14 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { from, Subscription } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import Map from '@arcgis/core/Map';
 import Graphic from '@arcgis/core/Graphic';
 import Point from '@arcgis/core/geometry/Point';
 import MapView from '@arcgis/core/views/MapView';
 
-// import Search from '@arcgis/core/widgets/Search';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import config from '@arcgis/core/config.js';
 
@@ -25,6 +25,11 @@ import { KIV_ZONES } from '@app/shared/constants';
 import { RequestsService } from '../../requests.service';
 import { Demand, DemandType } from '@app/shared/models/demand';
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
+import { IVolunteer } from '@app/shared/models';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
+import { DemandsMapService } from './demands-map.services';
+import { widgetViewCoordinatesInit, showCoordinates } from './map_additional';
 
 export interface coordinates {
   latitude: number;
@@ -47,23 +52,23 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
   @ViewChild('map', { static: true }) private mapViewEl: ElementRef;
   @ViewChild('headerSelectionZone', { static: true })
   private headerSelection: ElementRef;
-
   private map: Map = null;
   private mapView: MapView = null;
   private graphicsLayer: GraphicsLayer = null;
-  public requests: any[] = [];
+  public requests: Demand[] = [];
   private subRequests$: Subscription;
-  private coordsWidget: HTMLElement;
   public zones = KIV_ZONES;
   public demand: DemandType;
-  demands = Object.entries(DemandType).map(([key, value]) => key);
+  demandTypesFilter = Object.entries(DemandType).map(([key, value]) => key);
   form: FormGroup;
-  stepOnSelectionZone = 1;
+  public stepOnSelectionZone = 1;
   buttonSelectorTextOnMap = 'Următor';
   public dateDemandRequested: Date = null;
 
-  public selectedRequests: Demand[] = [];
+  public selectedDemands: Demand[] = [];
   public selectedCityZone = '';
+  public selectedDemandTypeFilter = '';
+  public anyDemand = 'any';
   private simpleMarkerSymbol = {
     type: 'simple-marker',
     color: [255, 255, 255, 0.3],
@@ -85,35 +90,34 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
   constructor(
     public requestsFacade: RequestsFacade,
     public requestsService: RequestsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar
   ) {}
-
-  OnDateChange(event: MatDatepickerInputEvent<Date>) {
-    console.log(`event: ${event.value}`);
-  }
 
   ngOnInit(): any {
     this.stepOnSelectionZone = 1;
+
     this.form = new FormGroup({
       city_sector: new FormControl(''),
       needs: new FormControl(''),
-      volunteerAvailabilityDate: new FormControl('', Validators.required),
     });
+
     // Initialize MapView
     config.assetsPath = '/assets';
-    this.initializeMap().then(() => {
-      // The map has been initialized and prefilled
-      // this.mapView.goTo(
-      //   new Point({
-      //     latitude: 47.01820503506154 + Math.random() * 0.01,
-      //     longitude: 28.812844986831664 + Math.random() * 0.01,
-      //   })
-      // );
-      // this.mapView.center = new Point({
-      //   latitude: 47.01820503506154 + Math.random() * 0.01,
-      //   longitude: 28.812844986831664 + Math.random() * 0.01,
-      // });
-    });
+    this.initializeMap();
+    // .then(() => {
+    // The map has been initialized and prefilled
+    // this.mapView.goTo(
+    //   new Point({
+    //     latitude: 47.01820503506154 + Math.random() * 0.01,
+    //     longitude: 28.812844986831664 + Math.random() * 0.01,
+    //   })
+    // );
+    // this.mapView.center = new Point({
+    //   latitude: 47.01820503506154 + Math.random() * 0.01,
+    //   longitude: 28.812844986831664 + Math.random() * 0.01,
+    // });
+    // });
   }
 
   async initializeMap() {
@@ -123,68 +127,51 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
       this.graphicsLayer = new GraphicsLayer();
 
       this.map = await new Map({
-        basemap: 'streets-navigation-vector',
+        basemap: 'streets-navigation-vector', // possible: topo-vector
         layers: [this.graphicsLayer],
-      }); //  topo-vector
+      });
 
       this.mapView = new MapView({
-        // container: this.mapViewEl.nativeElement,
         center: this.coordinates,
         container: this.mapViewEl.nativeElement,
         zoom: 12,
         map: this.map,
       });
+
       this.initializeRequestsOnTheMap('init');
-      this.mapView.popup.autoOpenEnabled = false; // Disable the default popup behavior
 
       this.mapView.on('click', (ev) => {
         this.mapView.hitTest(ev.screenPoint).then((res) => {
           if (res.results[0].graphic.attributes?.requestId === undefined)
             return;
 
-          this.mapView.popup.open({
-            // open a popup to show some of the results
-            location: ev.screenPoint,
-            title: 'Hit Test Results',
-            content: 'Features Found',
-          });
-
           const gr: Graphic = res.results[0].graphic;
           if (gr) {
-            const exist = this.selectedRequests.find(
+            const exist = this.selectedDemands.find(
               (r) => r._id === gr.attributes.requestId
             );
             if (exist === undefined) {
-              this.selectedRequests.push(
+              this.selectedDemands.push(
                 this.requests.find((r) => r._id === gr.attributes.requestId)
               );
               gr.symbol.set('color', [60, 210, 120, 0.7]);
             } else {
-              this.selectedRequests = this.selectedRequests.filter(
+              this.selectedDemands = this.selectedDemands.filter(
                 (r) => r !== exist
               );
               gr.symbol.set('color', [255, 255, 255, 0.3]);
             }
             this.mapView.graphics.add(gr.clone());
             this.mapView.graphics.remove(gr);
-            //need to issue detectChanges by Angular
-            this.selectedRequests = [...this.selectedRequests];
+            //2 nex rows need to throw detectChanges by Angular
+            this.selectedDemands = [...this.selectedDemands];
             this.cdr.detectChanges();
           }
         });
-        this.cdr.detectChanges();
       });
-
-      this.mapView.on('pointer-move', (ev) =>
-        this.showCoordinates(this.mapView.toMap({ x: ev.x, y: ev.y }))
-      );
-      this.mapView.on('load', (ev) => {
-        console.log('loaded');
-      });
-
-      this.widgetViewCoordinatesInit();
     } catch (error) {
       console.error(error);
+      this.snackMessage(`Error at map init phase, ${error}`);
     } finally {
       this.cdr.detectChanges();
     }
@@ -195,11 +182,11 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     filters: any = {}
   ): void {
     if (status === 'init') {
-      this.selectedRequests = [];
+      this.selectedDemands = [];
     } else {
       this.mapView.graphics.removeAll();
-      this.selectedRequests.forEach((el) =>
-        this.addRequestToMap(el, this.changedMarkerSymbol)
+      this.selectedDemands.forEach((el) =>
+        this.addDemandToMap(el, this.changedMarkerSymbol)
       );
     }
     from(
@@ -209,6 +196,7 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
           pageSize: 20000,
         },
         {
+          //TODO - temp for tests disabled
           status: 'confirmed',
           ...filters,
         }
@@ -217,15 +205,19 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
       (res) => {
         console.log('DB return demands from DB = ', res.list);
         this.requests = res.list;
-        this.requests.forEach((el) =>
-          this.addRequestToMap(el, this.simpleMarkerSymbol)
-        );
+        this.requests.forEach((el) => {
+          //TODO - for test purposes - delete after
+          // from(this.demandsMapService.tempSetStatusToConfirmed(el)).subscribe((res) =>
+          //   console.log('res', res)
+          // );
+          this.addDemandToMap(el, this.simpleMarkerSymbol);
+        });
       },
       (err) => console.log('Error getting requests from server! ', err)
     );
   }
   //TODO - provide right types especially IRequest
-  addRequestToMap(req: Demand, sym: any): void {
+  addDemandToMap(req: Demand, sym: any): void {
     const pointToMap = new Point({
       latitude:
         req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,
@@ -238,77 +230,50 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         symbol: sym,
         attributes: {
           requestId: req._id,
-          zone: req.beneficiary.zone || 'centru',
-        },
-        popupTemplate: {
-          // autocasts as new PopupTemplate()
-          title: 'Places in Chisinau',
-          content: [
-            {
-              type: 'fields',
-              fieldInfos: [
-                {
-                  fieldName: 'name',
-                  label: 'Name',
-                  visible: true,
-                },
-                {
-                  fieldName: 'address',
-                  label: 'Address',
-                  visible: true,
-                },
-              ],
-            },
-          ],
+          zone: req.beneficiary.zone || 'toate',
         },
       })
     );
     this.mapView.center = pointToMap;
   }
 
-  widgetViewCoordinatesInit(): void {
-    // Widget view coordinates
-    this.coordsWidget = document.createElement('Coordinates');
-    this.mapViewEl.nativeElement.appendChild(this.coordsWidget);
-    this.coordsWidget.id = 'coordsWidget';
-    this.coordsWidget.className = 'esri-widget esri-component';
-    this.coordsWidget.style.padding = '5px 2px 1px';
-    this.coordsWidget.style.width = '550px';
-    this.coordsWidget.style.height = '20px';
-    this.mapView.ui.add(this.coordsWidget, 'bottom-right');
-  }
+  //for both filters on demand step (1)
+  filterChanged(): void {
+    let selectedZone;
+    let currentFilter = {};
 
-  showCoordinates(pt): void {
-    this.coordsWidget.innerHTML = `Lat/Lon ${pt.latitude} / ${pt.longitude}
-      | Scale 1:${Math.round(this.mapView.scale * 1) / 1} | Zoom
-      ${this.mapView.zoom}`;
-  }
-
-  citySectorChanged(): void {
     this.selectedCityZone = `${this.form.get('city_sector').value}`;
-    console.log('🚀 ~ file:  this.selectedCityZone', this.selectedCityZone);
-    const selectedZone = this.zones.find(
-      (zone) => zone.value.toLowerCase() === this.selectedCityZone.toLowerCase()
-    );
-    this.mapView.center = new Point(selectedZone.mapCoordonates);
+    this.selectedDemandTypeFilter = `${this.form.get('needs').value}`;
 
-    if ('toate'.normalize() !== this.selectedCityZone.normalize())
-      this.initializeRequestsOnTheMap('filter', { zone: selectedZone.value });
-    else this.initializeRequestsOnTheMap('filter');
-
-    this.cdr.detectChanges();
-  }
-
-  necesityChanged(): void {
-    this.cdr.detectChanges();
+    if (
+      this.selectedCityZone &&
+      'toate'.normalize() !== this.selectedCityZone.normalize()
+    ) {
+      selectedZone = this.zones.find(
+        (zone) =>
+          zone.value.toLowerCase() === this.selectedCityZone.toLowerCase()
+      );
+      this.mapView.center = new Point(selectedZone.mapCoordonates);
+      currentFilter = { ...currentFilter, zone: selectedZone.value };
+    }
+    if (
+      this.selectedDemandTypeFilter &&
+      this.selectedDemandTypeFilter.normalize() !== this.anyDemand.normalize()
+    ) {
+      currentFilter = {
+        ...currentFilter,
+        type: this.selectedDemandTypeFilter,
+      };
+    }
+    this.initializeRequestsOnTheMap('filter', currentFilter);
   }
 
   onSubmit(ev): void {
     ev.preventDefault();
+    //for future possible actions
   }
 
   nextFormStep(): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     if (this.stepOnSelectionZone === 3) {
       this.stepOnSelectionZone = 1;
       this.initializeRequestsOnTheMap('init');
@@ -321,6 +286,11 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         this.headerSelection.nativeElement.innerHTML = 'Selectare Beneficiari';
         break;
       case 2:
+        if (this.selectedDemands.length === 0) {
+          this.stepOnSelectionZone--;
+          this.snackMessage('va rugam sa selectati ceva la acest pas');
+          break;
+        }
         this.buttonSelectorTextOnMap = 'Alocă';
         this.headerSelection.nativeElement.innerHTML = 'Selectare Voluntari';
         break;
@@ -333,6 +303,14 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     }
   }
 
+  snackMessage(msg: string) {
+    this.snackBar.open(msg, '', {
+      duration: 3000,
+      panelClass: '', //additional CSS
+      horizontalPosition: 'right',
+      verticalPosition: 'bottom',
+    });
+  }
   ngOnDestroy() {
     console.log('🚀 RequestsMapComponent ~ ngOnDestroy ~ ngOnDestroy');
     this.subRequests$.unsubscribe();

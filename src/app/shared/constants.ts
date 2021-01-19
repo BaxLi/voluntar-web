@@ -55,10 +55,6 @@ export const KIV_ZONES = [
       longitude: 28.83263462925968,
     },
   },
-  {
-    label: 'Suburbii',
-    value: 'suburbii',
-  },
 ];
 
 export const KIV_ZONES_MAP = KIV_ZONES.reduce((acc, zone) => {

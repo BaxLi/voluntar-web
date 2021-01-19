@@ -15,17 +15,10 @@ import { from } from 'rxjs';
   styleUrls: ['./demand-selection.component.scss'],
 })
 export class DemandSelectionOnMapComponent implements OnInit, OnChanges {
-  @Input() selectedRequests: Demand[] = [];
+  @Input() selectedDemands: Demand[] = [];
   @Input() selectedCityZone = '';
   @Input() selectionStep = 1;
   constructor(private cdr: ChangeDetectorRef) {}
-
-  volunteerClicked(id: string) {
-    console.log(
-      '🚀 ~ file: demand.component.ts ~ line 33 ~ MapSelectionZoneComponent ~ volunteerClicked ~ id',
-      id
-    );
-  }
 
   ngOnChanges(changes: SimpleChanges): void {
     // console.log(
@@ -40,6 +33,6 @@ export class DemandSelectionOnMapComponent implements OnInit, OnChanges {
   }
 
   public ngOnInit(): void {
-    console.log('demand-selection.ts', this.selectedRequests);
+    console.log('demand-selection.ts', this.selectedDemands);
   }
 }
