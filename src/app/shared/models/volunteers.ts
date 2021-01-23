@@ -14,6 +14,7 @@ export interface IVolunteer {
   longitude: number;
   phone: number;
   zone_address: string;
+  zone: string;
 
   distance?: number;
   accepted_offer?: boolean;

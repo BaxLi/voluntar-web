@@ -60,13 +60,36 @@
         <!-- --------- 2 ----------------- -->
         <div *ngIf="stepOnSelectionZone === 2">
           <app-volunteer-selection
-            ([selectionStep])="(stepOnSelectionZone)"
-            [demands]="selectedDemands"
+            (selectedVolunteer)="selectedVolunteerProvided($event)"
           ></app-volunteer-selection>
         </div>
         <!-- --------- 3 ----------------- -->
         <div *ngIf="stepOnSelectionZone === 3">
-          <div>FINAL!</div>
+          <div>
+            <p>Sarcina este În Proces.</p>
+            <p>Link-ul a fost trimis voluntarului pe email.</p>
+
+            <mat-card>
+              <mat-card-header>
+                <mat-card-title>
+                  <img
+                    src="/assets/icons/requests/mapSelectionDot.png"
+                    width="16"
+                    height="16"
+                  />
+                  {{ selectedVolunteer.first_name || "_???_" }}
+                </mat-card-title>
+                <mat-card-subtitle>
+                  <mat-icon style="font-size: 12px">place</mat-icon>
+                  {{ selectedVolunteer.zone }}
+                </mat-card-subtitle>
+                <mat-card-subtitle>
+                  <mat-icon style="font-size: 16px">mail</mat-icon>
+                  {{ selectedVolunteer.email || "nedeterminat" }}
+                </mat-card-subtitle>
+              </mat-card-header>
+            </mat-card>
+          </div>
         </div>
       </div>
     </form>

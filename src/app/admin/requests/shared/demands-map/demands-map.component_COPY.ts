@@ -16,14 +16,16 @@ import Map from '@arcgis/core/Map';
 import Graphic from '@arcgis/core/Graphic';
 import Point from '@arcgis/core/geometry/Point';
 import MapView from '@arcgis/core/views/MapView';
+
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
+import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import config from '@arcgis/core/config.js';
 
 import { RequestsFacade } from '../../requests.facade';
-import { KIV_ZONES } from '@app/shared/constants';
 import { RequestsService } from '../../requests.service';
-import { Demand, DemandType } from '@app/shared/models/demand';
 import { DemandsMapService } from './demands-map.services';
+import { Demand, DemandType } from '@app/shared/models/demand';
+import { KIV_ZONES } from '@app/shared/constants';
 import { IVolunteer } from '@app/shared/models/volunteers';
 
 export interface coordinates {
@@ -42,14 +44,13 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     28.825140232956283,
     47.01266177894471,
   ];
-  @Output() mapLoadedEvent = new EventEmitter<boolean>();
-  @Output() mapClickedEvent = new EventEmitter<boolean>();
   @ViewChild('map', { static: true }) private mapViewEl: ElementRef;
   @ViewChild('headerSelectionZone', { static: true })
   private headerSelection: ElementRef;
   private map: Map = null;
   private mapView: MapView = null;
   private graphicsLayer: GraphicsLayer = null;
+  private graphicsFeatureLayer: FeatureLayer = null;
   public requests: Demand[] = [];
   private subRequests$: Subscription;
   public zones = KIV_ZONES;
@@ -59,6 +60,8 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
   public stepOnSelectionZone = 1;
   buttonSelectorTextOnMap = 'Următor';
   public dateDemandRequested: Date = null;
+
+  private featuresForLayer = null;
 
   public selectedDemands: Demand[] = [];
   public selectedVolunteer: IVolunteer = null;
@@ -101,21 +104,53 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
 
     // Initialize MapView
     config.assetsPath = '/assets';
-    this.initializeMap().then(() => {
-      // The map has been initialized and prefilled
-    });
+    this.initializeMapFeatureLayer();
   }
 
-  async initializeMap() {
+  async initializeMapFeatureLayer() {
     try {
       //Geographic data stored temporarily in memory.
       //Displaying individual geographic features as graphics, visual aids or text on the map.
-      this.graphicsLayer = new GraphicsLayer();
+      this.getDemandsFromDB();
+      //prepare data for Feature
+      this.requests.forEach((el) => this.addDemandToMap(el));
+
+      console.log(this.featuresForLayer);
+
+      this.graphicsFeatureLayer = new FeatureLayer({
+        // create an instance of esri/layers/support/Field for each field object
+        // fields: [
+        //   {
+        //     name: 'ObjectID',
+        //     type: 'oid',
+        //   },
+        //   {
+        //     name: 'demandId',
+        //     type: 'string',
+        //   },
+        // ],
+        // geometryType: 'point',
+        // renderer: {
+        //   type: 'simple',
+        //   symbol: {
+        //     type: 'text', // autocasts as new WebStyleSymbol()
+        //     color: '#7A003C',
+        //     text: '\ue62f',
+        //     font: {
+        //       size: 20,
+        //       family: 'CalciteWebCoreIcons',
+        //     },
+        //   },
+        // },
+        source: this.featuresForLayer, // adding an empty feature collection
+        objectIdField: 'ObjectID',
+      });
+
       this.initializeRequestsOnTheMap('init');
 
       this.map = await new Map({
         basemap: 'streets-navigation-vector', // possible: topo-vector
-        layers: [this.graphicsLayer],
+        layers: [this.graphicsFeatureLayer],
       });
 
       this.mapView = new MapView({
@@ -127,6 +162,11 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
 
       this.mapView.on('click', (ev) => {
         this.mapView.hitTest(ev.screenPoint).then((res) => {
+          console.log('De aisea ', res.results);
+          console.log(
+            'De aisea2 ',
+            res.results[1].graphic.attributes.requestId
+          );
           if (res.results[0].graphic.attributes?.requestId === undefined)
             return;
 
@@ -159,35 +199,15 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         //center map view to selected point
         this.mapView.goTo({ center: ev.mapPoint });
       });
-
-      this.mapView.when(
-        () => {},
-        (error) => {
-          // Use the errback function to handle when the view doesn't load properly
-          console.log('The view~s resources failed to load: ', error);
-        }
-      );
     } catch (error) {
       console.error(error);
+      this.snackMessage(`Error at map init phase, ${error}`);
     } finally {
       this.cdr.detectChanges();
     }
   }
 
-  initializeRequestsOnTheMap(
-    status: 'init' | 'filter',
-    filters: any = {}
-  ): void {
-    if (status === 'init') {
-      this.selectedDemands = [];
-    } else {
-      console.log('aici 248 rind');
-
-      this.graphicsLayer.removeAll();
-      this.selectedDemands.forEach((el) =>
-        this.addDemandToMap(el, this.changedMarkerSymbol)
-      );
-    }
+  getDemandsFromDB() {
     from(
       this.requestsService.getDemand(
         {
@@ -197,44 +217,58 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         {
           //TODO - temp for tests disabled
           status: 'confirmed',
-          ...filters,
+          // ...filters,
         }
       )
-    ).subscribe(
-      (res) => {
-        console.log('DB return demands from DB = ', res.list);
-        this.requests = res.list;
-        this.requests.forEach((el) => {
-          //TODO - testing purpose, set status to confirmed to have demands on the map
-          // from(this.demandsMapService.tempSetStatusToConfirmed(el)).subscribe((res) =>
-          //   console.log('res', res)
-          // );
-          this.addDemandToMap(el, this.simpleMarkerSymbol);
-        });
-      },
-      (err) => console.log('Error getting requests from server! ', err)
-    );
-  }
-
-  addDemandToMap(req: Demand, sym: any): void {
-    const pointToMap = new Point({
-      latitude:
-        req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,
-      longitude:
-        req.beneficiary.longitude || 28.812844986831664 + Math.random() * 0.01,
+    ).subscribe((res) => {
+      this.requests = res.list;
     });
-    this.graphicsLayer.add(
-      new Graphic({
-        geometry: pointToMap,
-        symbol: sym,
-        attributes: {
-          requestId: req._id,
-          zone: req.beneficiary.zone || 'toate',
-        },
-      })
-    );
   }
 
+  initializeRequestsOnTheMap(
+    status: 'init' | 'filter',
+    filters: any = {}
+  ): void {
+    if (status === 'init') {
+      this.selectedDemands = [];
+    }
+    // else {
+    //   this.graphicsLayer.removeAll();
+    //   this.selectedDemands.forEach((el) =>
+    //     this.addDemandToMap(el, this.changedMarkerSymbol)
+    //   );
+    // }
+
+    this.requests.forEach((el) => {
+      //TODO - testing purpose, set status to confirmed to have demands on the map
+      // from(this.demandsMapService.tempSetStatusToConfirmed(el)).subscribe((res) =>
+      //   console.log('res', res)
+      // );
+      this.addDemandToMap(el, this.simpleMarkerSymbol);
+    });
+  }
+
+  addDemandToMap(req: Demand, sym?: any): void {
+    const pointToMap = {
+      geometry: {
+        type: 'point',
+        latitude:
+          req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,
+        longitude:
+          req.beneficiary.longitude ||
+          28.812844986831664 + Math.random() * 0.01,
+      },
+      attributes: {
+        ObjectId: req._id,
+        zone: req.beneficiary.zone || 'toate',
+      },
+    };
+
+    this.featuresForLayer.push(pointToMap);
+  }
+
+  // TODO fix filters not working
+  //for both filters on demand step (1)
   filterChanged(): void {
     let selectedZone;
     let currentFilter = {};
@@ -265,6 +299,10 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     this.initializeRequestsOnTheMap('filter', currentFilter);
   }
 
+  onSubmit(ev): void {
+    ev.preventDefault();
+    //for future possible actions
+  }
   selectedVolunteerProvided(ev) {
     this.selectedVolunteer = ev;
   }
@@ -299,10 +337,6 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         this.buttonSelectorTextOnMap = 'ERROR !!!';
     }
   }
-  onSubmit(ev): void {
-    ev.preventDefault();
-    //for future possible actions
-  }
 
   alocareaVoluntarului() {
     console.log('volunteerId=', this.selectedVolunteer);
@@ -330,7 +364,6 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
       verticalPosition: 'bottom',
     });
   }
-
   ngOnDestroy() {
     console.log('🚀 RequestsMapComponent ~ ngOnDestroy ~ ngOnDestroy');
     this.subRequests$.unsubscribe();

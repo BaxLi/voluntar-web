@@ -14,7 +14,7 @@ import { UsersFacade } from '@users/users.facade';
 @Component({
   templateUrl: './request-details.component.html',
   styleUrls: ['./request-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RequestDetailsComponent implements OnInit, OnDestroy {
   form: FormGroup;

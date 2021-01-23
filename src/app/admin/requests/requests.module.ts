@@ -12,6 +12,7 @@ import { requestsRoutes } from './requests.routes';
 import { RequestAddressFieldComponent } from './request-details/request-address-field/request-address-field.component';
 import { VolunteerSelectionOnMapComponent } from './shared/demands-map/volunteer-selection/volunteer-selection.component';
 import { DemandSelectionOnMapComponent } from './shared/demands-map/demand-selection/demand-selection.component';
+import { FilterByNameOrFamilyPipe } from '@app/shared/pipes/filter-by-name-or-family.pipe';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { DemandSelectionOnMapComponent } from './shared/demands-map/demand-selec
     RequestAddressFieldComponent,
     DemandSelectionOnMapComponent,
     VolunteerSelectionOnMapComponent,
+    FilterByNameOrFamilyPipe,
   ],
   imports: [
     CommonModule,

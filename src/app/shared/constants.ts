@@ -16,6 +16,14 @@ export const KIV_ZONES = [
     },
   },
   {
+    label: 'Telecentru',
+    value: 'telecentru',
+    mapCoordonates: {
+      latitude: 47.01820503506,
+      longitude: 28.812844986831,
+    },
+  },
+  {
     label: 'Botanica',
     value: 'botanica',
     mapCoordonates: {

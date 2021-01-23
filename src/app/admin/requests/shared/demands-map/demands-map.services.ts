@@ -18,4 +18,12 @@ export class DemandsMapService {
       status: 'confirmed',
     });
   }
+
+  assignDemandsToVolunteer(volunteerId: string = '', demands: Demand[] = []) {
+    const bodyObj = {
+      volunteer: `${volunteerId}`,
+      request_list: demands.map((demand) => demand._id),
+    };
+    return this.http.post<any>(`${environment.url}/clusters`, bodyObj);
+  }
 }
