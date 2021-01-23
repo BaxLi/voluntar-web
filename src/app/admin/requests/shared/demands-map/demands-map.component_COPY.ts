@@ -61,7 +61,7 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
   buttonSelectorTextOnMap = 'Următor';
   public dateDemandRequested: Date = null;
 
-  private featuresForLayer = null;
+  private featuresForLayer: Array<Graphic> = [];
 
   public selectedDemands: Demand[] = [];
   public selectedVolunteer: IVolunteer = null;
@@ -104,49 +104,48 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
 
     // Initialize MapView
     config.assetsPath = '/assets';
-    this.initializeMapFeatureLayer();
+    this.initializeMapFeatureLayer().then(() => {
+      console.log('after map init requests=', this.requests);
+    });
+    // this.getDemandsFromDB().then(this.initializeMapFeatureLayer);
   }
 
   async initializeMapFeatureLayer() {
     try {
       //Geographic data stored temporarily in memory.
       //Displaying individual geographic features as graphics, visual aids or text on the map.
-      this.getDemandsFromDB();
+      // this.getDemandsFromDB();
       //prepare data for Feature
-      this.requests.forEach((el) => this.addDemandToMap(el));
 
       console.log(this.featuresForLayer);
+      console.log(this.requests);
 
       this.graphicsFeatureLayer = new FeatureLayer({
         // create an instance of esri/layers/support/Field for each field object
-        // fields: [
-        //   {
-        //     name: 'ObjectID',
-        //     type: 'oid',
-        //   },
-        //   {
-        //     name: 'demandId',
-        //     type: 'string',
-        //   },
-        // ],
-        // geometryType: 'point',
-        // renderer: {
-        //   type: 'simple',
-        //   symbol: {
-        //     type: 'text', // autocasts as new WebStyleSymbol()
-        //     color: '#7A003C',
-        //     text: '\ue62f',
-        //     font: {
-        //       size: 20,
-        //       family: 'CalciteWebCoreIcons',
-        //     },
-        //   },
-        // },
-        source: this.featuresForLayer, // adding an empty feature collection
+        fields: [
+          {
+            name: 'ObjectID',
+            type: 'oid',
+          },
+          {
+            name: 'demandId',
+            type: 'string',
+          },
+        ],
+        geometryType: 'point',
+        renderer: {
+          type: 'simple',
+          symbol: {
+            type: 'web-style', // autocasts as new WebStyleSymbol()
+            styleName: 'Esri2DPointSymbolsStyle',
+            name: 'landmark',
+          },
+        },
+        source: [], // adding an empty feature collection - this.featuresForLayer
         objectIdField: 'ObjectID',
       });
 
-      this.initializeRequestsOnTheMap('init');
+      // this.initializeRequestsOnTheMap('init');
 
       this.map = await new Map({
         basemap: 'streets-navigation-vector', // possible: topo-vector
@@ -160,41 +159,53 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         map: this.map,
       });
 
+      this.addDemandToMap();
+      this.addDemandToMap();
+      this.addDemandToMap();
+      this.addDemandToMap();
+
       this.mapView.on('click', (ev) => {
         this.mapView.hitTest(ev.screenPoint).then((res) => {
           console.log('De aisea ', res.results);
-          console.log(
-            'De aisea2 ',
-            res.results[1].graphic.attributes.requestId
-          );
-          if (res.results[0].graphic.attributes?.requestId === undefined)
-            return;
+          console.log('De aisea2 ', res.results[0].graphic);
+          // if (res.results[0].graphic.attributes?.requestId === undefined)
+          //   return;
 
-          const gr: Graphic = res.results[0].graphic;
-          if (gr) {
-            const exist = this.selectedDemands.find(
-              (r) => r._id === gr.attributes.requestId
-            );
-            if (exist === undefined) {
-              //in case of missed - add demand to the selected demands and make it green on map
-              this.selectedDemands.push(
-                this.requests.find((r) => r._id === gr.attributes.requestId)
-              );
-              this.selectedDemands = [...this.selectedDemands];
-              gr.symbol.set('color', [60, 210, 120, 0.7]);
-            } else {
-              //in case of exist - remove demand from selected and make it white on map
-              this.selectedDemands = this.selectedDemands.filter(
-                (r) => r !== exist
-              );
-              gr.symbol.set('color', [255, 255, 255, 0.3]);
-            }
-            this.graphicsLayer.add(gr.clone());
-            this.graphicsLayer.remove(gr);
+          // const gr: Graphic = res.results[0].graphic;
+          const gr: Graphic = new Graphic({
+            geometry: new Point(ev.mapPoint),
+            symbol: this.simpleMarkerSymbol,
+          });
+          // this.graphicsFeatureLayer.source.add(gr);
+          const edits = {
+            addFeatures: [gr],
+          };
+          this.graphicsFeatureLayer.applyEdits(edits);
 
-            //next row needs to throw detectChanges by Angular
-            this.cdr.detectChanges();
-          }
+          // if (gr) {
+          //   const exist = this.selectedDemands.find(
+          //     (r) => r._id === gr.attributes.requestId
+          //   );
+          //   if (exist === undefined) {
+          //     //in case of missed - add demand to the selected demands and make it green on map
+          //     this.selectedDemands.push(
+          //       this.requests.find((r) => r._id === gr.attributes.requestId)
+          //     );
+          //     this.selectedDemands = [...this.selectedDemands];
+          //     gr.symbol.set('color', [60, 210, 120, 0.7]);
+          //   } else {
+          //     //in case of exist - remove demand from selected and make it white on map
+          //     this.selectedDemands = this.selectedDemands.filter(
+          //       (r) => r !== exist
+          //     );
+          //     gr.symbol.set('color', [255, 255, 255, 0.3]);
+          //   }
+          //   this.graphicsLayer.add(gr.clone());
+          //   this.graphicsLayer.remove(gr);
+
+          //next row needs to throw detectChanges by Angular
+          this.cdr.detectChanges();
+          // }
         });
         //center map view to selected point
         this.mapView.goTo({ center: ev.mapPoint });
@@ -207,23 +218,35 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     }
   }
 
-  getDemandsFromDB() {
-    from(
-      this.requestsService.getDemand(
-        {
-          pageIndex: 1,
-          pageSize: 20000,
-        },
-        {
-          //TODO - temp for tests disabled
-          status: 'confirmed',
-          // ...filters,
-        }
-      )
-    ).subscribe((res) => {
-      this.requests = res.list;
-    });
-  }
+  // async getDemandsFromDB(): Promise<Array<Demand>> {
+
+  //   return new Promise(() => {
+
+  //     from(
+  //       this.requestsService.getDemand(
+  //         {
+  //           pageIndex: 1,
+  //           pageSize: 20000,
+  //         },
+  //         {
+  //           //TODO - temp for tests disabled
+  //           status: 'confirmed',
+  //           // ...filters,
+  //         }
+  //       )
+  //     ).subscribe(
+  //       (res) => {
+  //       this.requests = res.list;
+  //       this.requests.forEach((el) => this.addDemandToMap(el));
+  //       console.log(res);
+
+  //     },
+  //     _ => {
+  //       console.log('Did not manage to load demands from DB');
+  //     }
+  //     );
+  //   }
+  // }
 
   initializeRequestsOnTheMap(
     status: 'init' | 'filter',
@@ -248,23 +271,35 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     });
   }
 
-  addDemandToMap(req: Demand, sym?: any): void {
-    const pointToMap = {
-      geometry: {
-        type: 'point',
-        latitude:
-          req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,
-        longitude:
-          req.beneficiary.longitude ||
-          28.812844986831664 + Math.random() * 0.01,
-      },
-      attributes: {
-        ObjectId: req._id,
-        zone: req.beneficiary.zone || 'toate',
-      },
+  addDemandToMap(req?: Demand, sym?: any): void {
+    const point = {
+      longitude:
+        // req.beneficiary.longitude || 28.812844986831664 + Math.random() * 0.01,
+        28.812844986831664 + Math.random() * 0.01,
+      latitude:
+        // req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,
+        47.01820503506154 + Math.random() * 0.01,
     };
 
-    this.featuresForLayer.push(pointToMap);
+    // const pointToMap: Graphic = new Graphic({
+    //   geometry: point,
+    //   attributes: {
+    //     ObjectId: req._id,
+    //     zone: req.beneficiary.zone || 'toate',
+    //   },
+    // });
+
+    // this.featuresForLayer.push(pointToMap);
+
+    const gr: Graphic = new Graphic({
+      geometry: new Point(point),
+      symbol: this.simpleMarkerSymbol,
+    });
+
+    const edits = {
+      addFeatures: [gr],
+    };
+    this.graphicsFeatureLayer.applyEdits(edits);
   }
 
   // TODO fix filters not working
