@@ -202,7 +202,6 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
       )
     ).subscribe(
       (res) => {
-        console.log('DB return demands from DB = ', res.list);
         this.requests = res.list;
         this.requests.forEach((el) => {
           //TODO - testing purpose, set status to confirmed to have demands on the map

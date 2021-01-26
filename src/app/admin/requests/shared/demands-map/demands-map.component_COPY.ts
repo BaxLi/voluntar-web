@@ -16,6 +16,7 @@ import Map from '@arcgis/core/Map';
 import Graphic from '@arcgis/core/Graphic';
 import Point from '@arcgis/core/geometry/Point';
 import MapView from '@arcgis/core/views/MapView';
+import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
 
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
@@ -27,6 +28,7 @@ import { DemandsMapService } from './demands-map.services';
 import { Demand, DemandType } from '@app/shared/models/demand';
 import { KIV_ZONES } from '@app/shared/constants';
 import { IVolunteer } from '@app/shared/models/volunteers';
+import SimpleRenderer from '@arcgis/core/renderers/SimpleRenderer';
 
 export interface coordinates {
   latitude: number;
@@ -68,23 +70,21 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
   public selectedCityZone = '';
   public selectedDemandTypeFilter = '';
   public anyDemand = 'any';
-  private simpleMarkerSymbol = {
-    type: 'simple-marker',
+  private simpleMarkerSymbol = new SimpleMarkerSymbol({
     color: [255, 255, 255, 0.3],
     style: 'circle', //'circle', 'cross', 'diamond', 'path', 'square', 'triangle', 'x'
     outline: {
       color: [226, 119, 40], // orange
       width: 2,
     },
-  };
-  private changedMarkerSymbol = {
-    type: 'simple-marker',
+  });
+  private changedMarkerSymbol = new SimpleMarkerSymbol({
     color: [60, 210, 120, 0.7], // green
     outline: {
       color: [0, 0, 0, 0.7],
       width: 1,
     },
-  };
+  });
 
   constructor(
     public requestsFacade: RequestsFacade,
@@ -102,26 +102,42 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
       needs: new FormControl(''),
     });
 
-    // Initialize MapView
     config.assetsPath = '/assets';
-    this.initializeMapFeatureLayer().then(() => {
-      console.log('after map init requests=', this.requests);
-    });
-    // this.getDemandsFromDB().then(this.initializeMapFeatureLayer);
+
+    this.demandsMapService
+      .getDemandsFromDB(
+        { pageIndex: 1, pageSize: 10000 },
+        { status: 'confirmed' }
+      )
+      .subscribe(
+        (res) => {
+          this.requests = res.list || [];
+          console.log(
+            '🚀 ~ file: demands-map.component_COPY.ts ~ line 114 ~ DemandsMapComponent ~ ngOnInit ~ this.requests',
+            this.requests
+          );
+
+          this.initializeMapFeatureLayer();
+        },
+        (err) => {
+          console.log('error loading demands from DB', err);
+        }
+      );
   }
 
   async initializeMapFeatureLayer() {
     try {
       //Geographic data stored temporarily in memory.
       //Displaying individual geographic features as graphics, visual aids or text on the map.
-      // this.getDemandsFromDB();
-      //prepare data for Feature
 
-      console.log(this.featuresForLayer);
-      console.log(this.requests);
+      this.initializeRequestsForTheMap('init');
 
       this.graphicsFeatureLayer = new FeatureLayer({
+        // supportsEditing: true,
+        // supportsAdd: true,
         // create an instance of esri/layers/support/Field for each field object
+        title: 'demands',
+        objectIdField: 'ObjectID', // This must be defined when creating a layer from Graphics
         fields: [
           {
             name: 'ObjectID',
@@ -129,23 +145,32 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
           },
           {
             name: 'demandId',
+            alias: 'demandId',
+            type: 'string',
+          },
+          {
+            name: 'zone',
+            alias: 'zone',
             type: 'string',
           },
         ],
-        geometryType: 'point',
-        renderer: {
-          type: 'simple',
-          symbol: {
-            type: 'web-style', // autocasts as new WebStyleSymbol()
-            styleName: 'Esri2DPointSymbolsStyle',
-            name: 'landmark',
-          },
-        },
-        source: [], // adding an empty feature collection - this.featuresForLayer
-        objectIdField: 'ObjectID',
-      });
 
-      // this.initializeRequestsOnTheMap('init');
+        geometryType: 'point', // Must be set when creating a layer from Graphics
+        renderer: new SimpleRenderer({
+          symbol: new SimpleMarkerSymbol({
+            style: 'circle',
+            size: 25,
+            color: [211, 255, 0, 0],
+            outline: {
+              width: 1,
+              color: '#FF0055',
+              style: 'solid',
+            },
+          }),
+          label: 'LBL',
+        }),
+        source: this.featuresForLayer, // adding an empty feature collection - this.featuresForLayer
+      });
 
       this.map = await new Map({
         basemap: 'streets-navigation-vector', // possible: topo-vector
@@ -159,54 +184,85 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         map: this.map,
       });
 
-      this.addDemandToMap();
-      this.addDemandToMap();
-      this.addDemandToMap();
-      this.addDemandToMap();
-
+      // this.addDemandToMap();
       this.mapView.on('click', (ev) => {
-        this.mapView.hitTest(ev.screenPoint).then((res) => {
-          console.log('De aisea ', res.results);
-          console.log('De aisea2 ', res.results[0].graphic);
-          // if (res.results[0].graphic.attributes?.requestId === undefined)
-          //   return;
-
-          // const gr: Graphic = res.results[0].graphic;
-          const gr: Graphic = new Graphic({
-            geometry: new Point(ev.mapPoint),
-            symbol: this.simpleMarkerSymbol,
+        this.mapView
+          .whenLayerView(this.graphicsFeatureLayer)
+          .then((layerView) => {
+            // wait for the layer view to finish updating
+            layerView.queryFeatures().then((results) => {
+              console.log('results = ', results); // prints all the client-side features to the console
+            });
           });
-          // this.graphicsFeatureLayer.source.add(gr);
-          const edits = {
-            addFeatures: [gr],
-          };
-          this.graphicsFeatureLayer.applyEdits(edits);
 
-          // if (gr) {
-          //   const exist = this.selectedDemands.find(
-          //     (r) => r._id === gr.attributes.requestId
-          //   );
-          //   if (exist === undefined) {
-          //     //in case of missed - add demand to the selected demands and make it green on map
-          //     this.selectedDemands.push(
-          //       this.requests.find((r) => r._id === gr.attributes.requestId)
-          //     );
-          //     this.selectedDemands = [...this.selectedDemands];
-          //     gr.symbol.set('color', [60, 210, 120, 0.7]);
-          //   } else {
-          //     //in case of exist - remove demand from selected and make it white on map
-          //     this.selectedDemands = this.selectedDemands.filter(
-          //       (r) => r !== exist
-          //     );
-          //     gr.symbol.set('color', [255, 255, 255, 0.3]);
-          //   }
-          //   this.graphicsLayer.add(gr.clone());
-          //   this.graphicsLayer.remove(gr);
+        this.mapView.hitTest(ev.screenPoint).then((response) => {
+          console.log(response.results);
+          if (response.results.length) {
+            // const graphic = response.results?.find(
+            //   (result) =>
+            //     // check if the graphic belongs to the layer of interest
+            //     result.graphic.layer === this.graphicsFeatureLayer
+            // ).graphic;
+            const ar = response.results[0];
 
-          //next row needs to throw detectChanges by Angular
-          this.cdr.detectChanges();
-          // }
+            // do something with the result graphic
+            // console.log('Attributes = ', ar?.attributes);
+            console.log('G4apfic = ', ar.graphic.attributes);
+          }
         });
+
+        // this.mapView.hitTest(ev.screenPoint).then((res) => {
+        //   const query = this.graphicsFeatureLayer.createQuery();
+        //   // this.graphicsArray.forEach((graphics) => {
+        //   //   if (new Point(ev.mapPoint) === graphics.geometry)
+        //   //     console.log(graphics);
+        //   // });
+        //   // query.where =
+        //   console.log('De aisea ', res.results);
+        //   console.log(
+        //     'De aisea2 ',
+        //     this.graphicsFeatureLayer.queryFeatures(query).then((res) => res)
+        //   );
+        //   // if (res.results[0].graphic.attributes?.requestId === undefined)
+        //   //   return;
+
+        //   // ADDING POINTS ON CLICK
+        //   // // const gr: Graphic = res.results[0].graphic;
+        //   // const gr: Graphic = new Graphic({
+        //   //   geometry: new Point(ev.mapPoint),
+        //   //   symbol: this.simpleMarkerSymbol,
+        //   // });
+        //   // // this.graphicsFeatureLayer.source.add(gr);
+        //   // const edits = {
+        //   //   addFeatures: [gr],
+        //   // };
+        //   // this.graphicsFeatureLayer.applyEdits(edits);
+
+        //   // if (gr) {
+        //   //   const exist = this.selectedDemands.find(
+        //   //     (r) => r._id === gr.attributes.requestId
+        //   //   );
+        //   //   if (exist === undefined) {
+        //   //     //in case of missed - add demand to the selected demands and make it green on map
+        //   //     this.selectedDemands.push(
+        //   //       this.requests.find((r) => r._id === gr.attributes.requestId)
+        //   //     );
+        //   //     this.selectedDemands = [...this.selectedDemands];
+        //   //     gr.symbol.set('color', [60, 210, 120, 0.7]);
+        //   //   } else {
+        //   //     //in case of exist - remove demand from selected and make it white on map
+        //   //     this.selectedDemands = this.selectedDemands.filter(
+        //   //       (r) => r !== exist
+        //   //     );
+        //   //     gr.symbol.set('color', [255, 255, 255, 0.3]);
+        //   //   }
+        //   //   this.graphicsLayer.add(gr.clone());
+        //   //   this.graphicsLayer.remove(gr);
+
+        //   //next row needs to throw detectChanges by Angular
+        //   this.cdr.detectChanges();
+        //   // }
+        // });
         //center map view to selected point
         this.mapView.goTo({ center: ev.mapPoint });
       });
@@ -218,37 +274,7 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     }
   }
 
-  // async getDemandsFromDB(): Promise<Array<Demand>> {
-
-  //   return new Promise(() => {
-
-  //     from(
-  //       this.requestsService.getDemand(
-  //         {
-  //           pageIndex: 1,
-  //           pageSize: 20000,
-  //         },
-  //         {
-  //           //TODO - temp for tests disabled
-  //           status: 'confirmed',
-  //           // ...filters,
-  //         }
-  //       )
-  //     ).subscribe(
-  //       (res) => {
-  //       this.requests = res.list;
-  //       this.requests.forEach((el) => this.addDemandToMap(el));
-  //       console.log(res);
-
-  //     },
-  //     _ => {
-  //       console.log('Did not manage to load demands from DB');
-  //     }
-  //     );
-  //   }
-  // }
-
-  initializeRequestsOnTheMap(
+  initializeRequestsForTheMap(
     status: 'init' | 'filter',
     filters: any = {}
   ): void {
@@ -261,45 +287,42 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
     //     this.addDemandToMap(el, this.changedMarkerSymbol)
     //   );
     // }
+    this.addDemandsToMap();
 
-    this.requests.forEach((el) => {
-      //TODO - testing purpose, set status to confirmed to have demands on the map
-      // from(this.demandsMapService.tempSetStatusToConfirmed(el)).subscribe((res) =>
-      //   console.log('res', res)
-      // );
-      this.addDemandToMap(el, this.simpleMarkerSymbol);
-    });
+    // this.requests.forEach((el) => {
+    //   //TODO - testing purpose, set status to confirmed to have demands on the map
+    //   // from(this.demandsMapService.tempSetStatusToConfirmed(el)).subscribe((res) =>
+    //   //   console.log('res', res)
+    //   // );
+    //   this.addDemandsToMap(el);
+    // });
   }
 
-  addDemandToMap(req?: Demand, sym?: any): void {
-    const point = {
-      longitude:
-        // req.beneficiary.longitude || 28.812844986831664 + Math.random() * 0.01,
-        28.812844986831664 + Math.random() * 0.01,
-      latitude:
-        // req.beneficiary.latitude || 47.01820503506154 + Math.random() * 0.01,
-        47.01820503506154 + Math.random() * 0.01,
-    };
-
-    // const pointToMap: Graphic = new Graphic({
-    //   geometry: point,
-    //   attributes: {
-    //     ObjectId: req._id,
-    //     zone: req.beneficiary.zone || 'toate',
-    //   },
-    // });
-
-    // this.featuresForLayer.push(pointToMap);
-
-    const gr: Graphic = new Graphic({
-      geometry: new Point(point),
-      symbol: this.simpleMarkerSymbol,
+  addDemandsToMap(): void {
+    let count = 1;
+    this.requests.forEach((demand) => {
+      const point = {
+        longitude: demand.beneficiary.longitude,
+        // ||          28.812844986831664 + Math.random() * 0.01
+        latitude: demand.beneficiary.latitude,
+        //  ||          47.01820503506154 + Math.random() * 0.01,
+      };
+      const gr: Graphic = new Graphic({
+        geometry: new Point(point),
+        symbol: this.simpleMarkerSymbol,
+        attributes: {
+          ObjectID: count++,
+          demandId: demand._id,
+          zone: demand.beneficiary.zone || 'toate',
+        },
+      });
+      this.featuresForLayer.push(gr);
     });
-
-    const edits = {
-      addFeatures: [gr],
-    };
-    this.graphicsFeatureLayer.applyEdits(edits);
+    // console.log(gr.attributes);
+    // const edits = {
+    //   addFeatures: grArray,
+    // };
+    // this.graphicsFeatureLayer.applyEdits(edits);
   }
 
   // TODO fix filters not working
@@ -331,7 +354,7 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
         type: this.selectedDemandTypeFilter,
       };
     }
-    this.initializeRequestsOnTheMap('filter', currentFilter);
+    this.initializeRequestsForTheMap('filter', currentFilter);
   }
 
   onSubmit(ev): void {
@@ -345,7 +368,7 @@ export class DemandsMapComponent implements OnDestroy, OnInit {
   nextFormStep(): void {
     if (this.stepOnSelectionZone === 3) {
       this.stepOnSelectionZone = 1;
-      this.initializeRequestsOnTheMap('init');
+      this.initializeRequestsForTheMap('init');
     } else {
       this.stepOnSelectionZone++;
     }

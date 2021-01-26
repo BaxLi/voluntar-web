@@ -6,7 +6,7 @@ import { MaterialComponentsModule } from '@shared/material.module';
 import { SharedModule } from '@shared/shared.module';
 import { RequestFormComponent } from './shared/request-form/request-form.component';
 import { NgxMaskModule } from 'ngx-mask';
-import { DemandsMapComponent } from './shared/demands-map/demands-map.component_COPY';
+import { DemandsMapComponent } from './shared/demands-map/demands-map.component';
 import { RouterModule } from '@angular/router';
 import { requestsRoutes } from './requests.routes';
 import { RequestAddressFieldComponent } from './request-details/request-address-field/request-address-field.component';
